@@ -5,7 +5,7 @@ on:
     - cron: '0 8 * * *' # run at 8 AM UTC (12 am PST)
   push:
     branches:
-      - master
+      - main
       - develop
       - 'release*'
   pull_request:
@@ -39,7 +39,7 @@ jobs:
 
     - name: Base installation
       run: |
-        pip install .
+        pip install . --use-feature=in-tree-build
 
     - name: Print version
       run: |
