@@ -39,7 +39,7 @@ jobs:
 
     - name: Base installation
       run: |
-        pip install .
+        pip install . --use-feature=in-tree-build
 
     - name: Print version
       run: |
