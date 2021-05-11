@@ -1,0 +1,11 @@
+black
+flake8
+pylint
+nose
+nose-timer
+coverage
+requests
+appdirs
+numpy
+bmipy
+xmipy
