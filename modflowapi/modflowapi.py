@@ -1,12 +1,7 @@
 from ctypes import (
-    CDLL,
     byref,
-    POINTER,
     c_char_p,
-    c_double,
     c_int,
-    c_void_p,
-    cdll,
     create_string_buffer,
 )
 from typing import Tuple
