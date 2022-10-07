@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class ListInput:
+class ListInput(object):
     """
     Data object for storing pointers and working with list based input data
 
@@ -130,7 +130,7 @@ class ListInput:
                     self.mf6.set_value(self._reduced_to_var_addr[name], x)
                 else:
                     self._ptrs[name][:] = recarray[name].ravel()
-
+                    
     @property
     def stress_period_data(self):
         """

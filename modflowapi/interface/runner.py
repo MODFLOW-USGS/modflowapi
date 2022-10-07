@@ -1,9 +1,15 @@
 from .. import ModflowApi
 from .simulation import Simulation
-from .model import Model
+from enum import Enum
 
 
-def run_model(dll, sim_path, callback=None):
+class Callbacks(Enum):
+    stress_period = 0
+    timestep = 1
+    iteration = 2
+
+
+def run_model(dll, sim_path, callback):
     mf6 = ModflowApi(
         dll,
         working_directory=sim_path,
@@ -18,25 +24,32 @@ def run_model(dll, sim_path, callback=None):
     end_time = mf6.get_end_time()
     kperold = [0 for _ in range(sim.subcomponent_count)]
 
-    # todo: setup callback
+    # todo: setup sim level callback?
 
     while current_time < end_time:
         delt = current_time - prev_time
         dt = mf6.get_time_step()
         mf6.prepare_time_step(dt)
 
+        # question: can multiple models have the same solution id???
+        #   and therefore we need to also iterate over subcomponents???
         for sol_id, maxiter in sim.solutions.items():
+            for model in sim.models:
+                if sol_id == model.solution_id:
+                    break
+
             if sim.kper != kperold[sol_id - 1]:
                 kperold[sol_id - 1] += 1
-                # todo: stress period callback
+                callback(model, Callbacks.stress_period)
+            elif current_time == 0:
+                callback(model, Callbacks.stress_period)
 
             mf6.prepare_solve(sol_id)
             kiter = 0
-            # todo: callback: timestep callback
+            callback(model, Callbacks.timestep)
 
             while kiter < maxiter:
-                # todo: iteration callback
-
+                callback(model, Callbacks.iteration)
                 has_converged = mf6.solve(sol_id)
                 kiter += 1
                 if has_converged:
