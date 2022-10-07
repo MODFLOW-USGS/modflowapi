@@ -9,11 +9,17 @@ class Callbacks(Enum):
     iteration = 2
 
 
-def run_model(dll, sim_path, callback):
+def run_model(dll, sim_path, callback, verbose=False):
+
     mf6 = ModflowApi(
         dll,
         working_directory=sim_path,
     )
+
+    if verbose:
+        version = mf6.get_version()
+        print(f"MODFLOW-6 API Version {version}")
+        print("Initializing MODFLOW-6 simulation")
 
     mf6.initialize()
     sim = Simulation(mf6)
@@ -27,9 +33,14 @@ def run_model(dll, sim_path, callback):
     # todo: setup sim level callback?
 
     while current_time < end_time:
-        delt = current_time - prev_time
         dt = mf6.get_time_step()
         mf6.prepare_time_step(dt)
+
+        if verbose:
+            print(
+                f"Solving: Stress Period {sim.kper + 1}; "
+                f"Timestep {sim.kstp + 1}"
+            )
 
         # question: can multiple models have the same solution id???
         #   and therefore we need to also iterate over subcomponents???
@@ -58,17 +69,14 @@ def run_model(dll, sim_path, callback):
             mf6.finalize_solve(sol_id)
 
         mf6.finalize_time_step()
-        prev_time = current_time
         current_time = mf6.get_current_time()
 
         if not has_converged:
-            print("MODEL DID NOT CONVERGE")
+            print(f"MODEL: {model.name} DID NOT CONVERGE")
 
     try:
         mf6.finalize()
-    except:
+    except Exception:
         raise RuntimeError("MF6 simulation failed, check listing file")
 
-    print("SUCCESSFUL TERMINATION OF PROGRAM")
-
-
+    print("SUCCESSFUL TERMINATION OF THE SIMULATION")
