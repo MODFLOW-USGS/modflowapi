@@ -130,16 +130,32 @@ class ListInput(object):
                     self.mf6.set_value(self._reduced_to_var_addr[name], x)
                 else:
                     self._ptrs[name][:] = recarray[name].ravel()
-                    
+
+    def __getitem__(self, item):
+        recarray = self._ptr_to_recarray()
+        return recarray[item]
+
+    def __setitem__(self, key, value):
+        recarray = self._ptr_to_recarray()
+        recarray[key] = value
+        self._recarray_to_ptr(recarray)
+
     @property
-    def stress_period_data(self):
+    def dtype(self):
+        """
+        Returns the numpy dtypes for the recarray
+        """
+        return self._dtype
+
+    @property
+    def values(self):
         """
         Returns a np.recarray of the current stress_period_data
         """
         return self._ptr_to_recarray()
 
-    @stress_period_data.setter
-    def stress_period_data(self, recarray):
+    @values.setter
+    def values(self, recarray):
         """
         Setter method to update the current stress_period_data
         """

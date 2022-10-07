@@ -1,3 +1,5 @@
+import numpy as np
+
 from .data  import ListInput, ArrayInput
 
 
@@ -146,16 +148,23 @@ class ListPackage(PackageBase):
     @property
     def stress_period_data(self):
         """
-        Returns a np.recarray of the current stress_period_data
+        Returns a ListInput object of the current stress_period_data
         """
-        return self._variables.stress_period_data
+        return self._variables
 
     @stress_period_data.setter
     def stress_period_data(self, recarray):
         """
         Setter method to update the current stress_period_data
         """
-        self._variables.stress_period_data = recarray
+        if isinstance(recarray, np.recarray):
+            self._variables.values = recarray
+        elif isinstance(recarray, ListInput):
+            self._variables.values = recarray.values
+        else:
+            raise TypeError(
+                f"{type(recarray)} is not a supported stress_period_data type"
+            )
 
 
 class ArrayPackage(PackageBase):
