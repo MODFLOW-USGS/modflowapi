@@ -42,6 +42,7 @@ class Model:
         self.mf6 = mf6
         self.name = name
         self._id = mf6.get_value(f"{name}/ID")[0]
+        self._solnid = mf6.get_value(f"{name}/IDSOLN")[0]
         grid_type = mf6.get_grid_type(self._id)
         # todo: need a better way to determine dis_name
         if grid_type == "rectilinear":
@@ -56,8 +57,10 @@ class Model:
 
         self.pkg_types = {
             "dis": ArrayPackage,
+            "chd": ListPackage,
             "drn": ListPackage,
             "evt": ListPackage,
+            "ghb": ListPackage,
             "ic": ArrayPackage,
             "npf": ArrayPackage,
             "rch": ListPackage,
@@ -113,11 +116,26 @@ class Model:
                 return pkg_list
 
     @property
+    def kper(self):
+        return self.mf6.get_value("TDIS/KPER")[0] - 1
+
+    @property
+    def kstp(self):
+        return self.mf6.get_value("TDIS/KSTP")[0] - 1
+
+    @property
     def subcomponent_id(self):
         """
         Returns the model subcomponent id
         """
         return self._id
+
+    @property
+    def solution_id(self):
+        """
+        Returns the model solution id
+        """
+        return self._solnid
 
     @property
     def package_list(self):
@@ -208,10 +226,10 @@ class Model:
         for addr in self.mf6.get_input_var_names():
             tmp = addr.split("/")
             if addr.endswith("PACKAGE_TYPE") and tmp[0] == self.name:
-                pak_types[self.mf6.get_value(addr)[0]] = tmp[1]
+                pak_types[tmp[1]] = self.mf6.get_value(addr)[0]
 
-        self._pak_type = pak_types.keys()
-        self._pkg_names = pak_types.values()
+        self._pak_type = list(pak_types.values())
+        self._pkg_names = list(pak_types.keys())
 
     def _create_package_list(self):
         """
@@ -221,8 +239,8 @@ class Model:
         def __init__(self, obj, model, pkg_type, pkg_name):
             obj.__init__(self, model, pkg_type, pkg_name)
 
-        for pkg_name in self._pkg_names:
-            pkg_type = pkg_name.split("_")[0].lower()
+        for ix, pkg_name in enumerate(self._pkg_names):
+            pkg_type = self._pak_type[ix].lower()
             if pkg_type in self.pkg_types:
                 basepackage = self.pkg_types[pkg_type]
                 package = type(

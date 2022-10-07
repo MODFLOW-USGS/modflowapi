@@ -80,6 +80,7 @@ class ListInput:
             else:
                 values = values.ravel()
                 if name in self._nodevars:
+                    values -= 1
                     values = self.parent.model.nodetouser[values]
 
                 recarray[name][0:self._nbound[0]] = values
@@ -106,7 +107,7 @@ class ListInput:
 
         for name in recarray.dtype.names:
             if name in self._nodevars:
-                recarray[name] = self.parent.model.usertonode[recarray[name]]
+                recarray[name] = self.parent.model.usertonode[recarray[name]] + 1
 
             # todo: adjust this
             if name in self.parent._bound_vars:

@@ -1,7 +1,7 @@
 from .data  import ListInput, ArrayInput
 
 
-# todo: hfb, chd, ghb, rcha, evta
+# Note: HFB variables are not accessible in the memory manager 10/7/2022
 pkgvars = {
     "dis": [
         "top",
@@ -24,12 +24,6 @@ pkgvars = {
         "maxbound",
         "nodelist",
         ("bound", ("surface", "rate", "depth"))  # pxdp:NSEG, petm:NSEG
-    ],
-    "evta":[
-        "ievt",
-        "surface",
-        "rate",
-        "depth"
     ],
     "ghb": [
         "nbound",
@@ -54,10 +48,6 @@ pkgvars = {
         "nbound",
         "nodelist",
         ("bound", ("recharge",))
-    ],
-    "rcha": [
-        "irch",
-        "recharge"
     ],
     "sto": [
         "iconvert",
