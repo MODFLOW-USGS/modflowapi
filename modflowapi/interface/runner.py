@@ -23,11 +23,6 @@ def run_model(dll, sim_path, callback, verbose=False):
 
     mf6.initialize()
 
-    var_names = mf6.get_input_var_names()
-    with open("var_names", "w") as foo:
-        for vn in var_names:
-            foo.write(f"{vn}\n")
-
     sim = Simulation(mf6)
 
     has_converged = False
