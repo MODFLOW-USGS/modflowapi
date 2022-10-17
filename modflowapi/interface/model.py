@@ -17,12 +17,13 @@ disvars = {
             "ncol"
         ]
     },
-    "disv": [
+    "disu": {
+        "shape": [
+            "nlay",
+            "ncpl",
+        ]
+    },
 
-    ],
-    "disu": [
-
-    ]
 }
 
 
@@ -44,16 +45,16 @@ class Model:
         self._id = mf6.get_value(f"{name}/ID")[0]
         self._solnid = mf6.get_value(f"{name}/IDSOLN")[0]
         grid_type = mf6.get_grid_type(self._id)
-        # todo: need a better way to determine dis_name
         if grid_type == "rectilinear":
             self.dis_type = "dis"
             self.dis_name = "DIS"
-        elif grid_type == "vertex":
-            self.dis_type = "disv"
-            self.dis_name = "DISV"
+        elif grid_type == "unstructured":
+            self.dis_type = "disu"
+            self.dis_name = "DIS"
         else:
-            self.grid_type = "disu"
-            self.dis_name = "DISU"
+            raise AssertionError(
+                f"Unrecognized discretization type {grid_type}"
+            )
 
         self.pkg_types = {
             "dis": ArrayPackage,
@@ -83,10 +84,14 @@ class Model:
         if self.dis_type == "dis":
             s += f"{shape[0]} Layer, {shape[1]} Row, {shape[2]}, " \
                  f"Column model\n"
-        elif self.dis_type == "disv":
-            s += f"{shape[0]} Layer, {shape[1]} Nodes per layer model\n"
+
+        elif self.dis_type == "disu":
+            if len(shape) == 2:
+                s += f"{shape[0]} Layer, {shape[1]} Nodes per layer model\n"
+            else:
+                s += f"{shape[0]} Node model\n"
         else:
-            s += f"{shape[0]} Node model\n"
+            pass
 
         s += "Packages accessible include: \n"
         for name in self.package_names:
@@ -156,12 +161,20 @@ class Model:
         """
         Returns a tuple of the model shape
         """
+        ivn = self.mf6.get_input_var_names()
         if self._shape is None:
             shape_vars = disvars[self.dis_type]["shape"]
             shape = []
             for var in shape_vars:
                 var_addr = self.mf6.get_var_address(
                     var.upper(), self.name, self.dis_name
+                )
+                # todo: test DISU grids....
+                if var_addr in ivn:
+                    shape.append(self.mf6.get_value(var_addr)[0])
+            if not shape:
+                var_addr = self.mf6.get_var_address(
+                    "NODES", self.name, self.dis_name
                 )
                 shape.append(self.mf6.get_value(var_addr)[0])
             self._shape = tuple(shape)

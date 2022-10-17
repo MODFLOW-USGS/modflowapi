@@ -81,6 +81,9 @@ class Simulation:
                 name = t[0]
                 if name.startswith("SLN"):
                     continue
+                if f"{name.upper()}/ID" not in variables:
+                    continue
+
                 if name not in model_names:
                     model_names.append(name)
 
@@ -99,6 +102,9 @@ class Simulation:
             if len(t) == 2:
                 if t[0] in model_names or t[0] == "TDIS":
                     continue
+                if f"{t[0]}/ID" not in variables:
+                    continue
+
                 solution_names.append(t[0])
 
         solution_names = list(set(solution_names))

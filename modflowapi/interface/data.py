@@ -201,11 +201,13 @@ class ArrayInput:
         """
         Method to modflow variable pointers to the _ptrs dictionary
         """
+        ivn = self.mf6.get_input_var_names()
         for var_addr in self.var_addrs:
-            values = self.mf6.get_value_ptr(var_addr)
-            reduced = var_addr.split("/")[-1].lower()
-            self._ptrs[reduced] = values
-            self._reduced_to_var_addr[reduced] = var_addr
+            if var_addr in ivn:
+                values = self.mf6.get_value_ptr(var_addr)
+                reduced = var_addr.split("/")[-1].lower()
+                self._ptrs[reduced] = values
+                self._reduced_to_var_addr[reduced] = var_addr
 
     def __getattr__(self, item):
         """

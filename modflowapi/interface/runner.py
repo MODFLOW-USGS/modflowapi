@@ -22,15 +22,18 @@ def run_model(dll, sim_path, callback, verbose=False):
         print("Initializing MODFLOW-6 simulation")
 
     mf6.initialize()
+
+    var_names = mf6.get_input_var_names()
+    with open("var_names", "w") as foo:
+        for vn in var_names:
+            foo.write(f"{vn}\n")
+
     sim = Simulation(mf6)
 
     has_converged = False
-    prev_time = 0
     current_time = mf6.get_current_time()
     end_time = mf6.get_end_time()
     kperold = [0 for _ in range(sim.subcomponent_count)]
-
-    # todo: setup sim level callback?
 
     while current_time < end_time:
         dt = mf6.get_time_step()
@@ -42,29 +45,30 @@ def run_model(dll, sim_path, callback, verbose=False):
                 f"Timestep {sim.kstp + 1}"
             )
 
-        # question: can multiple models have the same solution id???
-        #   and therefore we need to also iterate over subcomponents???
         for sol_id, maxiter in sim.solutions.items():
+            models = []
             for model in sim.models:
                 if sol_id == model.solution_id:
-                    break
-
-            if sim.kper != kperold[sol_id - 1]:
-                kperold[sol_id - 1] += 1
-                callback(model, Callbacks.stress_period)
-            elif current_time == 0:
-                callback(model, Callbacks.stress_period)
+                    models.append(model)
 
             mf6.prepare_solve(sol_id)
-            kiter = 0
-            callback(model, Callbacks.timestep)
+            for ix, model in enumerate(models):
+                if sim.kper != kperold[sol_id - 1]:
+                    callback(model, Callbacks.stress_period)
+                    if ix + 1 == len(models):
+                        kperold[sol_id - 1] += 1
+                elif current_time == 0:
+                    callback(model, Callbacks.stress_period)
 
-            while kiter < maxiter:
-                callback(model, Callbacks.iteration)
-                has_converged = mf6.solve(sol_id)
-                kiter += 1
-                if has_converged:
-                    break
+                kiter = 0
+                callback(model, Callbacks.timestep)
+
+                while kiter < maxiter:
+                    callback(model, Callbacks.iteration)
+                    has_converged = mf6.solve(sol_id)
+                    kiter += 1
+                    if has_converged:
+                        break
 
             mf6.finalize_solve(sol_id)
 
