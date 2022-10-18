@@ -122,6 +122,22 @@ class PackageBase:
 
         self.var_addrs = var_addrs
 
+    @property
+    def rhs(self):
+        return
+
+    @rhs.setter
+    def rhs(self, values):
+        pass
+
+    @property
+    def hcoff(self):
+        return
+
+    @hcoff.setter
+    def hcoff(self, values):
+        pass
+
 
 class ListPackage(PackageBase):
     """
