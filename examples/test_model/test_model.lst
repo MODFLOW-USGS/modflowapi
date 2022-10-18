@@ -1,0 +1,393 @@
+                                   MODFLOW 6
+                U.S. GEOLOGICAL SURVEY MODULAR HYDROLOGIC MODEL
+                          GROUNDWATER FLOW MODEL (GWF)
+                   VERSION 6.4.0 release candidate 10/05/2022
+                               ***DEVELOP MODE***
+
+   MODFLOW 6 compiled Oct 05 2022 03:42:46 with Intel(R) Fortran Intel(R) 64
+   Compiler Classic for applications running on Intel(R) 64, Version 2021.6.0
+                             Build 20220226_000000
+
+This software is preliminary or provisional and is subject to 
+revision. It is being provided to meet the need for timely best 
+science. The software has not received final approval by the U.S. 
+Geological Survey (USGS). No warranty, expressed or implied, is made 
+by the USGS or the U.S. Government as to the functionality of the 
+software and related material nor shall the fact of release 
+constitute any such warranty. The software is provided on the 
+condition that neither the USGS nor the U.S. Government shall be held 
+liable for any damages resulting from the authorized or unauthorized 
+use of the software.
+
+
+As a work of the United States Government, this USGS product is 
+in the public domain within the United States. You can copy, 
+modify, distribute, and perform the work, even for commercial 
+purposes, all without asking permission. Additionally, USGS 
+waives copyright and related rights in the work worldwide 
+through CC0 1.0 Universal Public Domain Dedication 
+(https://creativecommons.org/publicdomain/zero/1.0/).
+
+The following GNU Lesser General Public License (LGPL) libraries
+are used in this USGS product:
+
+    SPARSKIT version 2.0
+      ilut, luson, and qsplit 
+      (https://www-users.cse.umn.edu/~saad/software/SPARSKIT/)
+
+    RCM - Reverse Cuthill McKee Ordering
+      (https://people.math.sc.edu/Burkardt/f_src/rcm/rcm.html)
+
+    BLAS - Basic Linear Algebra Subprograms Level 1
+      (https://people.math.sc.edu/Burkardt/f_src/blas1_d/blas1_d.html)
+
+    SPARSEKIT - Sparse Matrix Utility Package
+      amux, dperm, dvperm, rperm, and cperm
+      (https://people.sc.fsu.edu/~jburkardt/f77_src/sparsekit/sparsekit.html)
+
+The following BSD-3 License libraries are used in this USGS product:
+
+    Modern Fortran DAG Library
+      Copyright (c) 2018, Jacob Williams
+      All rights reserved.
+      (https://github.com/jacobwilliams/daglib)
+
+MODFLOW 6 compiler options: /Isrc\libmf6core.a.p /Isrc /I..\src
+/Isrc\libmf6_external.a.p /MTd /nologo /warn:general /warn:truncated_source
+/stand:f08 /Zi /traceback /O2 /Zi /fpe:0 /heap-arrays:0 /traceback /fpp
+/Qdiag-disable:7416 /Qdiag-disable:7025 /Qdiag-disable:5268
+/Fdsrc\libmf6core.a.p\Utilities_compilerversion.F90.pdb
+/module:src\libmf6core.a.p
+/Fosrc/libmf6core.a.p/Utilities_compilerversion.F90.obj /c
+
+System command used to initiate simulation:
+C:\Users\jlarsen\Documents\anaconda3\python.exe "C:/Users/jlarsen/AppData/Local/JetBrains/PyCharm Community Edition 2022.2.1/plugins/python-ce/helpers/pydev/pydevd.py" --multiprocess --qt-support=auto --client 127.0.0.1 --port 55859 --file C:/Users/jlarsen/Desktop/mf6_AG/modflow-api/develop.py
+
+MODFLOW was compiled using uniform precision.
+
+Real Variables
+  KIND: 8
+  TINY (smallest non-zero value):    2.225074-308
+  HUGE (largest value):    1.797693+308
+  PRECISION: 15
+  BIT SIZE: 64
+
+Integer Variables
+  KIND: 4
+  HUGE (largest value): 2147483647
+  BIT SIZE: 32
+
+Long Integer Variables
+  KIND: 8
+  HUGE (largest value): 9223372036854775807
+  BIT SIZE: 64
+
+Logical Variables
+  KIND: 4
+  BIT SIZE: 32
+ 
+
+ OPENED test_model.dis
+ FILE TYPE:DIS6                   UNIT 1006   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.ic
+ FILE TYPE:IC6                    UNIT 1007   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.npf
+ FILE TYPE:NPF6                   UNIT 1008   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.sto
+ FILE TYPE:STO6                   UNIT 1009   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.wel
+ FILE TYPE:WEL6                   UNIT 1010   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.drn
+ FILE TYPE:DRN6                   UNIT 1011   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.rch
+ FILE TYPE:RCH6                   UNIT 1012   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.rcha
+ FILE TYPE:RCH6                   UNIT 1013   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.chd
+ FILE TYPE:CHD6                   UNIT 1014   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.ghb
+ FILE TYPE:GHB6                   UNIT 1015   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.evt
+ FILE TYPE:EVT6                   UNIT 1016   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+
+ OPENED test_model.oc
+ FILE TYPE:OC6                    UNIT 1017   STATUS:OLD                 
+ FORMAT:FORMATTED              ACCESS:SEQUENTIAL          
+ ACTION:READ                
+
+ NAMEFILE OPTIONS:
+    STRESS PACKAGE INPUT WILL BE PRINTED FOR ALL MODEL STRESS PACKAGES
+    PACKAGE FLOWS WILL BE PRINTED FOR ALL MODEL PACKAGES
+    FLOWS WILL BE SAVED TO BUDGET FILE SPECIFIED IN OUTPUT CONTROL
+    NEWTON-RAPHSON method enabled for the model.
+    NEWTON-RAPHSON UNDER-RELAXATION based on the bottom elevation of the model will be applied to the model.
+
+ DIS -- STRUCTURED GRID DISCRETIZATION PACKAGE, VERSION 2 : 3/27/2014 - INPUT READ FROM UNIT 1006
+
+
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+ PROCESSING DISCRETIZATION OPTIONS
+    MODEL LENGTH UNIT IS METERS
+ END OF DISCRETIZATION OPTIONS
+ PROCESSING DISCRETIZATION DIMENSIONS
+    NLAY =       1
+    NROW =      10
+    NCOL =      10
+ END OF DISCRETIZATION DIMENSIONS
+ PROCESSING GRIDDATA
+
+                     DELR =   63.60000    
+
+                     DELC =   63.60000    
+
+ TOP ELEVATION OF LAYER 1 =   100.0000    
+
+   MODEL LAYER BOTTOM EL. =   0.000000    
+ END PROCESSING GRIDDATA
+
+ NPF -- NODE PROPERTY FLOW PACKAGE, VERSION 1, 3/30/2015 INPUT READ FROM UNIT 1008
+
+
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+ PROCESSING NPF OPTIONS
+    SPECIFIC DISCHARGE WILL BE CALCULATED AT CELL CENTERS AND WRITTEN TO DATA-SPDIS IN BUDGET FILE WHEN REQUESTED.
+ END OF NPF OPTIONS
+ PROCESSING GRIDDATA
+
+                ICELLTYPE = 1
+
+                        K =   1.000000    
+ K33 not provided.  Setting K33 = K.
+ K22 not provided.  Setting K22 = K.
+ END PROCESSING GRIDDATA
+
+ WEL   -- WEL PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1010
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING WEL OPTIONS
+ END OF WEL OPTIONS
+
+ PROCESSING WEL DIMENSIONS
+    MAXBOUND =       2
+ END OF WEL DIMENSIONS
+
+ DRN   -- DRN PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1011
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING DRN OPTIONS
+ END OF DRN OPTIONS
+
+ PROCESSING DRN DIMENSIONS
+    MAXBOUND =       2
+ END OF DRN DIMENSIONS
+
+ GHB   -- GHB PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1015
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING GHB OPTIONS
+ END OF GHB OPTIONS
+
+ PROCESSING GHB DIMENSIONS
+    MAXBOUND =       2
+ END OF GHB DIMENSIONS
+
+ RCH   -- RCH PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1012
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING RCH OPTIONS
+ END OF RCH OPTIONS
+
+ PROCESSING RCH DIMENSIONS
+    MAXBOUND =       2
+ END OF RCH DIMENSIONS
+
+ RCH   -- RCH PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1013
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING RCH OPTIONS
+    RECHARGE INPUT WILL BE READ AS ARRAY(S).
+ END OF RCHA OPTIONS
+
+ EVT   -- EVT PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1016
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING EVT OPTIONS
+ END OF EVT OPTIONS
+
+ PROCESSING EVT DIMENSIONS
+    MAXBOUND =       2
+ END OF EVT DIMENSIONS
+
+ CHD   -- CHD PACKAGE, VERSION 8, 2/22/2014 INPUT READ FROM UNIT 1014
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING CHD OPTIONS
+ END OF CHD OPTIONS
+
+ PROCESSING CHD DIMENSIONS
+    MAXBOUND =       2
+ END OF CHD DIMENSIONS
+
+ IC -- INITIAL CONDITIONS PACKAGE, VERSION 8, 3/28/2015 INPUT READ FROM UNIT 1007
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+ PROCESSING GRIDDATA
+
+     INITIAL HEAD =   95.00000    
+ END PROCESSING GRIDDATA
+
+ STO -- STORAGE PACKAGE, VERSION 1, 5/19/2014 INPUT READ FROM UNIT 1009
+
+
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+ PROCESSING STORAGE OPTIONS
+ END OF STORAGE OPTIONS
+ PROCESSING GRIDDATA
+
+                 ICONVERT = 1
+
+         SPECIFIC STORAGE =  0.1000000E-04
+
+           SPECIFIC YIELD =  0.1500000    
+ END PROCESSING GRIDDATA
+    BINARY GRID INFORMATION WILL BE WRITTEN TO:
+      UNIT NUMBER: 1019
+      FILE NAME: C:\Users\jlarsen\Desktop\mf6_AG\modflow-api\examples\test_model\test_model.dis.grb
+
+ OPENED C:\Users\jlarsen\Desktop\mf6_AG\modflow-api\examples\test_model\test_model.dis.grb
+ FILE TYPE:DATA(BINARY)   UNIT 1019   STATUS:REPLACE             
+ FORMAT:UNFORMATTED            ACCESS:STREAM              
+ ACTION:READWRITE           
+
+      THE LAST TIME STEP WILL BE PRINTED
+      THE LAST TIME STEP WILL BE PRINTED
+ # File generated by Flopy version 3.3.6 on 10/07/2022 at 11:12:19.
+
+ PROCESSING OC OPTIONS
+
+    BUDGET INFORMATION WILL BE WRITTEN TO:
+      UNIT NUMBER: 1020
+      FILE NAME: test_model.cbc
+
+ OPENED test_model.cbc
+ FILE TYPE:DATA(BINARY)   UNIT 1020   STATUS:REPLACE             
+ FORMAT:UNFORMATTED            ACCESS:STREAM              
+ ACTION:READWRITE           
+
+    HEAD INFORMATION WILL BE WRITTEN TO:
+      UNIT NUMBER: 1021
+      FILE NAME: test_model.hds
+
+ OPENED test_model.hds
+ FILE TYPE:DATA(BINARY)   UNIT 1021   STATUS:REPLACE             
+ FORMAT:UNFORMATTED            ACCESS:STREAM              
+ ACTION:READWRITE           
+
+ END OF OC OPTIONS
+
+start timestep kper="1" kstp="1" mode="normal"
+
+
+ BEGIN READING OUTPUT CONTROL FOR STRESS PERIOD 1
+      ALL TIME STEPS WILL BE SAVED
+      ALL TIME STEPS WILL BE SAVED
+      ALL TIME STEPS WILL BE PRINTED
+      ALL TIME STEPS WILL BE PRINTED
+
+ END READING OUTPUT CONTROL FOR STRESS PERIOD 1
+
+
+ STRESS PERIOD 1 IS TRANSIENT
+
+ ---------------------------------------------------
+  WEL NO.    LAYER    ROW     COL     STRESS RATE   
+ ---------------------------------------------------
+     1         1       6       5    -100.000000     
+     2         1       2       3    -50.0000000     
+ ---------------------------------------------------
+
+
+ --------------------------------------------------------------------
+  DRN NO.    LAYER    ROW     COL      DRAIN EL.       CONDUCTANCE   
+ --------------------------------------------------------------------
+     1         1       2       3     94.0000000       10.0000000     
+     2         1       2       4     95.0000000       10.0000000     
+ --------------------------------------------------------------------
+
+
+ --------------------------------------------------------------------
+  GHB NO.    LAYER    ROW     COL        STAGE         CONDUCTANCE   
+ --------------------------------------------------------------------
+     1         1      10       2     80.0000000       1.000000000E-03
+     2         1      10       3     81.0000000       1.000000000E-03
+ --------------------------------------------------------------------
+
+
+ ---------------------------------------------------
+  RCH NO.    LAYER    ROW     COL       RECHARGE    
+ ---------------------------------------------------
+     1         1      10       3     0.250000000    
+     2         1      10       4     0.250000000    
+ ---------------------------------------------------
+
+
+
+                 RECHARGE =  0.1000000E-02
+ -------------------------------------------------------------------------------------
+  EVT NO.    LAYER    ROW     COL       SURFACE         MAX. RATE        EXT. DEPTH   
+ -------------------------------------------------------------------------------------
+     1         1       5       4     100.000000       2.000000000E-02  10.0000000     
+     2         1       5       5     100.000000       2.000000000E-02  10.0000000     
+ -------------------------------------------------------------------------------------
+
+
+ ---------------------------------------------------
+  CHD NO.    LAYER    ROW     COL         HEAD      
+ ---------------------------------------------------
+     1         1       1       2     100.000000     
+     2         1       1       3     99.0000000     
+ ---------------------------------------------------
+
+
