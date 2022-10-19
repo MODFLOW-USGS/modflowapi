@@ -75,6 +75,7 @@ class Model:
         self._pak_type = None
         self._nodetouser = None
         self._usertonode = None
+        self._iteration = 0
         self._set_package_names()
         self._create_package_list()
 
@@ -119,6 +120,15 @@ class Model:
                 return pkg_list[0]
             else:
                 return pkg_list
+
+    @property
+    def iteration(self):
+        return self._iteration
+
+    @iteration.setter
+    def iteration(self, value):
+        if isinstance(value, int):
+            self._iteration = value
 
     @property
     def kper(self):

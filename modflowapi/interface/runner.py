@@ -4,9 +4,12 @@ from enum import Enum
 
 
 class Callbacks(Enum):
-    stress_period = 0
-    timestep = 1
-    iteration = 2
+    pre_initialize = 0
+    initialize = 1
+    stress_period = 2
+    timestep_start = 3
+    timestep_end = 4
+    iteration = 5
 
 
 def run_model(dll, sim_path, callback, verbose=False):
@@ -56,9 +59,10 @@ def run_model(dll, sim_path, callback, verbose=False):
                     callback(model, Callbacks.stress_period)
 
                 kiter = 0
-                callback(model, Callbacks.timestep)
+                callback(model, Callbacks.timestep_start)
 
                 while kiter < maxiter:
+                    model.iteration = kiter
                     callback(model, Callbacks.iteration)
                     has_converged = mf6.solve(sol_id)
                     kiter += 1

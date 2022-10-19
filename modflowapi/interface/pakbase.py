@@ -90,6 +90,8 @@ class PackageBase:
         self.pkg_name = pkg_name
         self.pkg_type = pkg_type
         self._bound_vars = None
+        self._rhs = None
+        self._hcof = None
 
         var_addrs = []
         for var in pkgvars[self.pkg_type]:
@@ -124,19 +126,43 @@ class PackageBase:
 
     @property
     def rhs(self):
-        return
+        if self._rhs is None:
+            var_addr = self.model.mf6.get_var_address(
+                "RHS", self.model.name, self.pkg_name
+            )
+            if var_addr in self.model.mf6.get_input_var_names():
+                self._rhs = self.model.mf6.get_value_ptr(var_addr)
+            else:
+                return
+
+        return np.copy(self._rhs)
 
     @rhs.setter
     def rhs(self, values):
-        pass
+        if self._rhs is None:
+            return
+
+        self._rhs = values
 
     @property
-    def hcoff(self):
-        return
+    def hcof(self):
+        if self._hcof is None:
+            var_addr = self.model.mf6.get_var_address(
+                "HCOF", self.model.name, self.pkg_name
+            )
+            if var_addr in self.model.mf6.get_input_var_names():
+                self._hcof = self.model.mf6.get_value_ptr(var_addr)
+            else:
+                return
 
-    @hcoff.setter
-    def hcoff(self, values):
-        pass
+        return np.copy(self._hcof)
+
+    @hcof.setter
+    def hcof(self, values):
+        if self._hcof is None:
+            return
+
+        self.__hcof = values
 
 
 class ListPackage(PackageBase):
@@ -219,7 +245,9 @@ class ArrayPackage(PackageBase):
                 "pkg_type",
                 "var_addrs",
                 "_variables",
-                "_bound_vars"
+                "_bound_vars",
+                "_rhs",
+                "_hcof"
         ):
             super().__setattr__(item, value)
 

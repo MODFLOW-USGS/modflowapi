@@ -56,6 +56,9 @@ class ListInput(object):
                         typ_str = values.dtype.str
                         dtype = (name, typ_str)
                         self._dtype.append(dtype)
+                elif reduced in self._nodevars:
+                    dtype = (reduced, "O")
+                    self._dtype.append(dtype)
                 else:
                     typ_str = values.dtype.str
                     dtype = (reduced, typ_str)
@@ -82,6 +85,9 @@ class ListInput(object):
                 if name in self._nodevars:
                     values -= 1
                     values = self.parent.model.nodetouser[values]
+                    values = list(
+                        zip(*np.unravel_index(values, self.parent.model.shape))
+                    )
 
                 recarray[name][0:self._nbound[0]] = values
 
@@ -107,7 +113,13 @@ class ListInput(object):
 
         for name in recarray.dtype.names:
             if name in self._nodevars:
-                recarray[name] = self.parent.model.usertonode[recarray[name]] + 1
+                multi_index = tuple(
+                    np.array([list(i) for i in recarray[name]]).T
+                )
+                nodes = np.ravel_multi_index(
+                    multi_index, self.parent.model.shape
+                )
+                recarray[name] = self.parent.model.usertonode[nodes] + 1
 
             # todo: adjust this
             if name in self.parent._bound_vars:
