@@ -4,12 +4,11 @@ from enum import Enum
 
 
 class Callbacks(Enum):
-    pre_initialize = 0
-    initialize = 1
-    stress_period = 2
-    timestep_start = 3
-    timestep_end = 4
-    iteration = 5
+    initialize = 0
+    stress_period = 1
+    timestep_start = 2
+    timestep_end = 3
+    iteration = 4
 
 
 def run_model(dll, sim_path, callback, verbose=False):
@@ -25,8 +24,10 @@ def run_model(dll, sim_path, callback, verbose=False):
         print("Initializing MODFLOW-6 simulation")
 
     mf6.initialize()
-
     sim = Simulation(mf6)
+
+    for model in sim.models:
+        callback(model, Callbacks.initialize)
 
     has_converged = False
     current_time = mf6.get_current_time()
@@ -68,6 +69,8 @@ def run_model(dll, sim_path, callback, verbose=False):
                     kiter += 1
                     if has_converged:
                         break
+
+                callback(model, Callbacks.timestep_end)
 
             mf6.finalize_solve(sol_id)
 
