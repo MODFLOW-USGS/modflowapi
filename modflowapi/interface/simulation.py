@@ -12,12 +12,10 @@ class Simulation:
         initialized ModflowApi object
 
     """
-    def __init__(self, mf6):
+    def __init__(self, mf6, models, solutions):
         self.mf6 = mf6
-        self._models = {}
-        self._solutions = {}
-        self._set_models()
-        self._set_solutions()
+        self._models = models
+        self._solutions = solutions
 
     def __getattr__(self, item):
         """
@@ -58,63 +56,38 @@ class Simulation:
 
     @property
     def models(self):
+        """
+        Returns a list of Model objects associated with the simulation
+        """
         return [v for _, v in self._models.items()]
 
     @property
     def kper(self):
+        """
+        Returns the current stress period
+        """
         return self.mf6.get_value("TDIS/KPER")[0] - 1
 
     @property
     def kstp(self):
+        """
+        Returns the current time step
+        """
         return self.mf6.get_value("TDIS/KSTP")[0] - 1
 
-    def _set_models(self):
+    @property
+    def nstp(self):
         """
-        Method to load model data for all models within a simulation
-
+        Returns the number of time steps
         """
-        variables = self.mf6.get_input_var_names()
-        model_names = []
-        for variable in variables:
-            t = variable.split("/")
-            if len(t) == 3:
-                name = t[0]
-                if name.startswith("SLN"):
-                    continue
-                if f"{name.upper()}/ID" not in variables:
-                    continue
+        return self.mf6.get_value("TDIS/NSTP")[0] - 1
 
-                if name not in model_names:
-                    model_names.append(name)
-
-        for name in model_names:
-            self._models[name.lower()] = Model(self.mf6, name)
-
-    def _set_solutions(self):
+    @property
+    def nper(self):
         """
-        Method to set a dictionary of the solution id and maxiter
+        Returns the number of stress periods
         """
-        variables = self.mf6.get_input_var_names()
-        model_names = [name.upper() for name in self.model_names]
-        solution_names = []
-        for variable in variables:
-            t = variable.split("/")
-            if len(t) == 2:
-                if t[0] in model_names or t[0] == "TDIS":
-                    continue
-                if f"{t[0]}/ID" not in variables:
-                    continue
-
-                solution_names.append(t[0])
-
-        solution_names = list(set(solution_names))
-        solution_dict = {}
-        for name in solution_names:
-            sid = self.mf6.get_value(f"{name}/ID")[0]
-            maxiter = self.mf6.get_value(f"{name}/MXITER")[0]
-            solution_dict[sid] = maxiter
-
-        self._solutions = solution_dict
+        return self.mf6.get_value("TDIS/NPER")[0] - 1
 
     def get_model(self, model_id):
         """
@@ -140,3 +113,53 @@ class Simulation:
 
         else:
             raise TypeError(f"A string or int must be supplied to get model")
+
+    @staticmethod
+    def load(mf6):
+        """
+        Method to load a modflowapi instance into the Simulation interface
+
+        Parameters
+        ----------
+        mf6 : ModflowApi
+            initialized ModflowApi object
+        """
+        variables = mf6.get_input_var_names()
+        model_names = []
+        for variable in variables:
+            t = variable.split("/")
+            if len(t) == 3:
+                name = t[0]
+                if name.startswith("SLN"):
+                    continue
+                if f"{name.upper()}/ID" not in variables:
+                    continue
+
+                if name not in model_names:
+                    model_names.append(name)
+
+        models = {}
+        for name in model_names:
+            models[name.lower()] = Model(mf6, name)
+
+        solution_names = []
+        for variable in variables:
+            t = variable.split("/")
+            if len(t) == 2:
+                if t[0].lower() in models or t[0] == "TDIS":
+                    continue
+                if f"{t[0]}/ID" not in variables:
+                    continue
+
+                solution_names.append(t[0])
+
+        solution_names = list(set(solution_names))
+        solution_dict = {}
+        for name in solution_names:
+            sid = mf6.get_value(f"{name}/ID")[0]
+            maxiter = mf6.get_value(f"{name}/MXITER")[0]
+            solution_dict[sid] = maxiter
+
+        solutions = solution_dict
+
+        return Simulation(mf6, models, solutions)

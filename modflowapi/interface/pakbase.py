@@ -8,30 +8,33 @@ pkgvars = {
     "dis": [
         "top",
         "bot",
+        "area",
+        "idomain"
     ],
     "chd": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("head",))
+        ("bound", ("head", "rhs", "hcof"))
     ],
     "drn": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("elev", "cond"))
+        ("bound", ("elev", "cond", "rhs", "hcof"))
     ],
     "evt": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("surface", "rate", "depth"))  # pxdp:NSEG, petm:NSEG
+        ("bound", ("surface", "rate", "depth", "rhs", "hcof"))
+        # "pxdp:NSEG", "petm:NSEG"
     ],
     "ghb": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("bhead", "cond"))
+        ("bound", ("bhead", "cond", "rhs", "hcof"))
     ],
     "ic": [
         "strt"
@@ -49,7 +52,7 @@ pkgvars = {
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ("recharge",))
+        ("bound", ("recharge", "rhs", "hcof"))
     ],
     "sto": [
         "iconvert",
@@ -65,7 +68,7 @@ pkgvars = {
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ['flux',]),
+        ("bound", ('flux', 'rhs', 'hcof')),
     ],
 }
 
@@ -90,8 +93,7 @@ class PackageBase:
         self.pkg_name = pkg_name
         self.pkg_type = pkg_type
         self._bound_vars = None
-        self._rhs = None
-        self._hcof = None
+        self._advanced_vars = None
 
         var_addrs = []
         for var in pkgvars[self.pkg_type]:
@@ -125,44 +127,41 @@ class PackageBase:
         self.var_addrs = var_addrs
 
     @property
-    def rhs(self):
-        if self._rhs is None:
-            var_addr = self.model.mf6.get_var_address(
-                "RHS", self.model.name, self.pkg_name
+    def advanced_vars(self):
+        """
+        Returns a list of additional "advanced" variables that are
+        accessible through the API
+        """
+        if self._advanced_vars is None:
+            adv_vars = []
+            for var_addr in self.model.mf6.get_input_var_names():
+                t = var_addr.split("/")
+                if t[0] == self.model.name and t[1] == self.pkg_name:
+                    if t[-1].lower() in self._bound_vars:
+                        continue
+                    elif t[-1].lower() in pkgvars[self.pkg_type]:
+                        continue
+                    else:
+                        adv_vars.append(t[-1].lower())
+            self._advanced_vars = adv_vars
+        return self._advanced_vars
+
+    def get_advanced_var(self, name):
+        """
+        Method to get an advanced variable that is not automatically
+        accessible through stress period data or as an array name
+        """
+        if name not in self.advanced_vars:
+            raise AssertionError(
+                f"{name} is not accessible as an advanced "
+                f"variable for this package"
             )
-            if var_addr in self.model.mf6.get_input_var_names():
-                self._rhs = self.model.mf6.get_value_ptr(var_addr)
-            else:
-                return
+        var_addr = self.model.mf6.get_var_address(
+            name.upper(), self.model.name, self.pkg_name
+        )
+        # todo: distribute this function call to the data containers
+        pass
 
-        return np.copy(self._rhs)
-
-    @rhs.setter
-    def rhs(self, values):
-        if self._rhs is None:
-            return
-
-        self._rhs = values
-
-    @property
-    def hcof(self):
-        if self._hcof is None:
-            var_addr = self.model.mf6.get_var_address(
-                "HCOF", self.model.name, self.pkg_name
-            )
-            if var_addr in self.model.mf6.get_input_var_names():
-                self._hcof = self.model.mf6.get_value_ptr(var_addr)
-            else:
-                return
-
-        return np.copy(self._hcof)
-
-    @hcof.setter
-    def hcof(self, values):
-        if self._hcof is None:
-            return
-
-        self.__hcof = values
 
 
 class ListPackage(PackageBase):
@@ -246,8 +245,7 @@ class ArrayPackage(PackageBase):
                 "var_addrs",
                 "_variables",
                 "_bound_vars",
-                "_rhs",
-                "_hcof"
+                "_advanced_vars"
         ):
             super().__setattr__(item, value)
 

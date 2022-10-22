@@ -307,3 +307,103 @@ class ArrayInput:
             raise KeyError(
                 f"{item} is not a valid variable name for this package"
             )
+
+
+class AdvancedInput(object):
+    """
+    Data object for dynamically storing pointers and working with
+    "advanced" data types
+
+    Parameters
+    ----------
+    parent : ArrayPackage
+        modflowapi ArrayPackage object
+    var_addrs : list, None
+        optional list of variable addresses
+    mf6 : ModflowApi, None
+        optional ModflowApi object
+    """
+    def __init__(self, parent, mf6=None):
+        self._ptrs = {}
+        self.parent = parent
+
+        if self.parent is not None:
+            self.mf6 = self.parent.model.mf6
+        else:
+            if mf6 is None:
+                raise AssertionError(
+                    "mf6 must be supplied if parent is None"
+                )
+            self.mf6 = mf6
+
+    def get_variable(self, name, model=None, package=None):
+        """
+        method to assemble a variable address and get a variable from the
+        ModflowApi instance
+
+        Parameters:
+        ----------
+        name : str
+            variable name
+        model : str
+            optional model name, note this is required if parent is None
+        package : str
+            optional package name, note this is requried if parent is None
+
+        Returns:
+        -------
+            np.ndarray or scalar float, int, string, or boolean value
+            depending on data type and length
+        """
+        if name.lower() in self._ptrs:
+            # todo: checks for array size, etc...
+            return self._ptrs[name.lower()]
+
+        if self.parent is not None:
+            var_addr = self.mf6.get_var_address(
+                name.upper(), self.parent.model.name, self.parent.pkg_name
+            )
+        else:
+            var_addr = self.mf6.get_var_address(
+                name.upper(), model.upper(), package.upper()
+            )
+
+        # todo: adjust arrays if applicable with the nodeuser array
+        values = self.mf6.get_value_ptr(var_addr)
+        self._ptrs[name.lower()] = values
+        return values.copy()
+
+    def set_variable(self, name, values, model=None, package=None):
+        """
+        method to assemble a variable address and get a variable from the
+        ModflowApi instance
+
+        Parameters:
+        ----------
+        name : str
+            variable name
+        values : np.ndarray
+            numpy array of variable values
+        model : str
+            optional model name, note this is required if parent is None
+        package : str
+            optional package name, note this is requried if parent is None
+
+        Returns:
+        -------
+            np.ndarray or scalar float, int, string, or boolean value
+            depending on data type and length
+        """
+        if name.lower() not in self._ptrs:
+            values0 = self.get_variable(name, model, package)
+        else:
+            values0 = self._ptrs[name.lower()]
+
+        # todo: adjust the input values shape to the nodeuser shape if
+        #  applicable.
+        if values0.shape != values.shape:
+            raise ValueError(
+                f"Array shapes are incompatable: "
+                f"current shape={values.shape}, valid shape={values0.shape}"
+            )
+

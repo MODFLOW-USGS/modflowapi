@@ -69,6 +69,7 @@ class Model:
             "wel": ListPackage
         }
         self.package_dict = {}
+        self.allow_convergence = True
         self._shape = None
         self._size = None
         self._pkg_names = None
@@ -121,6 +122,16 @@ class Model:
             else:
                 return pkg_list
 
+    def __setattr__(self, key, value):
+        """
+        Method for type checking variables
+        """
+        if key == "allow_convergence":
+            if not isinstance(value, bool):
+                raise TypeError("allow convergenge must be a boolean value")
+
+        super().__setattr__(key, value)
+
     @property
     def iteration(self):
         return self._iteration
@@ -137,6 +148,14 @@ class Model:
     @property
     def kstp(self):
         return self.mf6.get_value("TDIS/KSTP")[0] - 1
+
+    @property
+    def nstp(self):
+        return self.mf6.get_value("TDIS/NSTP")[0] - 1
+
+    @property
+    def nper(self):
+        return self.mf6.get_value("TDIS/NPER")[0] - 1
 
     @property
     def subcomponent_id(self):
@@ -179,7 +198,6 @@ class Model:
                 var_addr = self.mf6.get_var_address(
                     var.upper(), self.name, self.dis_name
                 )
-                # todo: test DISU grids....
                 if var_addr in ivn:
                     shape.append(self.mf6.get_value(var_addr)[0])
             if not shape:
@@ -219,6 +237,10 @@ class Model:
         if self._usertonode is None:
             self._set_node_mapping()
         return self._usertonode
+
+    @property
+    def head(self):
+        return self.mf6.get_value(self.mf6.get_var_address("X", self.name))
 
     def _set_node_mapping(self):
         """

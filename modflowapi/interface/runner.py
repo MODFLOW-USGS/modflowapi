@@ -8,7 +8,8 @@ class Callbacks(Enum):
     stress_period = 1
     timestep_start = 2
     timestep_end = 3
-    iteration = 4
+    iteration_start = 4
+    iteration_end = 5
 
 
 def run_model(dll, sim_path, callback, verbose=False):
@@ -24,7 +25,7 @@ def run_model(dll, sim_path, callback, verbose=False):
         print("Initializing MODFLOW-6 simulation")
 
     mf6.initialize()
-    sim = Simulation(mf6)
+    sim = Simulation.load(mf6)
 
     for model in sim.models:
         callback(model, Callbacks.initialize)
@@ -50,7 +51,10 @@ def run_model(dll, sim_path, callback, verbose=False):
                 if sol_id == model.solution_id:
                     models.append(model)
 
+            # can we prepare and finalize the solutions for all
             mf6.prepare_solve(sol_id)
+            # check on the simulation group solving and think about how to
+            # solve, as a group of models or single models in serial...
             for ix, model in enumerate(models):
                 if sim.kper != kperold[sol_id - 1]:
                     callback(model, Callbacks.stress_period)
@@ -64,8 +68,9 @@ def run_model(dll, sim_path, callback, verbose=False):
 
                 while kiter < maxiter:
                     model.iteration = kiter
-                    callback(model, Callbacks.iteration)
+                    callback(model, Callbacks.iteration_start)
                     has_converged = mf6.solve(sol_id)
+                    callback(model, Callbacks.iteration_end)
                     kiter += 1
                     if has_converged:
                         break

@@ -4,6 +4,9 @@ from modflowapi import Callbacks
 
 def my_function(ml, step):
     if step == Callbacks.stress_period:
+        rchs = ml.rch
+        rcha = ml.rcha_0
+        vars = rcha.advanced_vars
         rch_data = ml.rch[0].stress_period_data
 
         rch_data["recharge"] -= 10
@@ -23,7 +26,7 @@ def my_function(ml, step):
         rhs = ml.wel.rhs
         hcof = ml.wel.hcof
 
-    if step == Callbacks.iteration:
+    if step == Callbacks.iteration_start:
         chd = ml.chd
         spd = chd.stress_period_data.values
         spd["head"] -= 0.1
