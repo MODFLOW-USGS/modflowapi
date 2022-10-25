@@ -394,16 +394,20 @@ class AdvancedInput(object):
             np.ndarray or scalar float, int, string, or boolean value
             depending on data type and length
         """
+        if model is None:
+            model = self.parent.model.name
+        if package is None:
+            package = self.parent.pkg_name
+
         if name.lower() not in self._ptrs:
             values0 = self.get_variable(name, model, package)
         else:
             values0 = self._ptrs[name.lower()]
 
-        # todo: adjust the input values shape to the nodeuser shape if
-        #  applicable.
         if values0.shape != values.shape:
             raise ValueError(
                 f"Array shapes are incompatable: "
                 f"current shape={values.shape}, valid shape={values0.shape}"
             )
 
+        self._ptrs[name.lower()] = values

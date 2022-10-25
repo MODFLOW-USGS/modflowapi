@@ -1,6 +1,6 @@
 import numpy as np
 
-from .data  import ListInput, ArrayInput
+from .data  import ListInput, ArrayInput, AdvancedInput
 
 
 # Note: HFB variables are not accessible in the memory manager 10/7/2022
@@ -86,12 +86,15 @@ class PackageBase:
         package type name. ex. 'wel'
     pkg_name : str
         modflow package name. ex. 'wel_0'
+    child_type : str
+        type of child input package
 
     """
-    def __init__(self, model, pkg_type, pkg_name):
+    def __init__(self, model, pkg_type, pkg_name, child_type):
         self.model = model
         self.pkg_name = pkg_name
         self.pkg_type = pkg_type
+        self._child_type = child_type
         self._bound_vars = None
         self._advanced_vars = None
 
@@ -125,6 +128,7 @@ class PackageBase:
             )
 
         self.var_addrs = var_addrs
+        self._variables_adv = AdvancedInput(self)
 
     @property
     def advanced_vars(self):
@@ -159,9 +163,31 @@ class PackageBase:
         var_addr = self.model.mf6.get_var_address(
             name.upper(), self.model.name, self.pkg_name
         )
-        # todo: distribute this function call to the data containers
-        pass
 
+        values = self._advanced_vars.get_variable(var_addr)
+        if values.size == self.model.nodetouser.size \
+                and self._child_type == "array":
+            array = np.full(self.model.size, np.nan)
+            array[self.model.nodetouser] = values
+            return array
+
+        return values
+
+    def set_advanced_var(self, name, values):
+        """
+        Method to set data to an advanced variable
+
+        Parameters
+        ----------
+        name : str
+            parameter name
+        values : np.ndarray
+            numpy array
+        """
+        if self._child_type == "array" and values.size == self.model.size:
+            values = values[self.model.nodetouser]
+
+        self._variables_adv.set_variable(name, values)
 
 
 class ListPackage(PackageBase):
@@ -178,7 +204,7 @@ class ListPackage(PackageBase):
         package name (in the mf6 variables)
     """
     def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper())
+        super().__init__(model, pkg_type, pkg_name.upper(), 'list')
 
         self._variables = ListInput(self)
 
@@ -222,7 +248,7 @@ class ArrayPackage(PackageBase):
         package name (in the mf6 variables)
     """
     def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper())
+        super().__init__(model, pkg_type, pkg_name.upper(), 'array')
 
         self._variables = ArrayInput(self)
 
