@@ -7,14 +7,13 @@ def my_function(ml, step):
         rchs = ml.rch
         rcha = ml.rcha_0
         vars = rcha.advanced_vars
+        rcha.get_advanced_var("package_type")
         rch_data = ml.rch[0].stress_period_data
 
         rch_data["recharge"] -= 10
         rch_data = ml.rch_0.stress_period_data.values
         # ml.rch_0.stress_period_data.values = rch_data
 
-        rhs = ml.rch[0].rhs
-        hcof = ml.rch_0.hcof
         # do stuff
         ml.rch_0.stress_period_data.values = rch_data
         chk = ml.rch_0.stress_period_data.values
@@ -22,9 +21,6 @@ def my_function(ml, step):
     if step == Callbacks.timestep_start:
         ml.wel.stress_period_data["flux"] -= ml.kstp * 1.5
         chk = ml.wel.stress_period_data.values
-
-        rhs = ml.wel.rhs
-        hcof = ml.wel.hcof
 
     if step == Callbacks.iteration_start:
         chd = ml.chd

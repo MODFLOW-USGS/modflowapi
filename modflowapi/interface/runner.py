@@ -27,6 +27,10 @@ def run_model(dll, sim_path, callback, verbose=False):
     mf6.initialize()
     sim = Simulation.load(mf6)
 
+    with open("var_list.txt", "w") as foo:
+        for name in mf6.get_input_var_names():
+            foo.write(f"{name}\n")
+
     for model in sim.models:
         callback(model, Callbacks.initialize)
 

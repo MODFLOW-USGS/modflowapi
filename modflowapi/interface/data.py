@@ -368,8 +368,12 @@ class AdvancedInput(object):
                 name.upper(), model.upper(), package.upper()
             )
 
-        # todo: adjust arrays if applicable with the nodeuser array
-        values = self.mf6.get_value_ptr(var_addr)
+        # todo: change the error to use xmi.errors.InputError
+        try:
+            values = self.mf6.get_value_ptr(var_addr)
+        except Exception:
+            values = self.mf6.get_value(var_addr)
+
         self._ptrs[name.lower()] = values
         return values.copy()
 

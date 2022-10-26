@@ -15,26 +15,26 @@ pkgvars = {
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("head", "rhs", "hcof"))
+        ("bound", ("head"))
     ],
     "drn": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("elev", "cond", "rhs", "hcof"))
+        ("bound", ("elev", "cond"))
     ],
     "evt": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("surface", "rate", "depth", "rhs", "hcof"))
+        ("bound", ("surface", "rate", "depth"))
         # "pxdp:NSEG", "petm:NSEG"
     ],
     "ghb": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("bhead", "cond", "rhs", "hcof"))
+        ("bound", ("bhead", "cond"))
     ],
     "ic": [
         "strt"
@@ -52,7 +52,7 @@ pkgvars = {
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ("recharge", "rhs", "hcof"))
+        ("bound", ("recharge",)),
     ],
     "sto": [
         "iconvert",
@@ -95,8 +95,10 @@ class PackageBase:
         self.pkg_name = pkg_name
         self.pkg_type = pkg_type
         self._child_type = child_type
+        self._rhs = None
+        self._hcof = None
         self._bound_vars = None
-        self._advanced_vars = None
+        self._advanced_var_names = None
 
         var_addrs = []
         for var in pkgvars[self.pkg_type]:
@@ -136,7 +138,7 @@ class PackageBase:
         Returns a list of additional "advanced" variables that are
         accessible through the API
         """
-        if self._advanced_vars is None:
+        if self._advanced_var_names is None:
             adv_vars = []
             for var_addr in self.model.mf6.get_input_var_names():
                 t = var_addr.split("/")
@@ -147,8 +149,8 @@ class PackageBase:
                         continue
                     else:
                         adv_vars.append(t[-1].lower())
-            self._advanced_vars = adv_vars
-        return self._advanced_vars
+            self._advanced_var_names = adv_vars
+        return self._advanced_var_names
 
     def get_advanced_var(self, name):
         """
@@ -160,11 +162,8 @@ class PackageBase:
                 f"{name} is not accessible as an advanced "
                 f"variable for this package"
             )
-        var_addr = self.model.mf6.get_var_address(
-            name.upper(), self.model.name, self.pkg_name
-        )
 
-        values = self._advanced_vars.get_variable(var_addr)
+        values = self._variables_adv.get_variable(name)
         if values.size == self.model.nodetouser.size \
                 and self._child_type == "array":
             array = np.full(self.model.size, np.nan)
@@ -188,6 +187,46 @@ class PackageBase:
             values = values[self.model.nodetouser]
 
         self._variables_adv.set_variable(name, values)
+
+    @property
+    def rhs(self):
+        if self._rhs is None:
+            var_addr = self.model.mf6.get_var_address(
+                "RHS", self.model.name, self.pkg_name
+            )
+            if var_addr in self.model.mf6.get_input_var_names():
+                self._rhs = self.model.mf6.get_value_ptr(var_addr)
+            else:
+                return
+
+        return np.copy(self._rhs)
+
+    @rhs.setter
+    def rhs(self, values):
+        if self._rhs is None:
+            return
+
+        self._rhs = values
+
+    @property
+    def hcof(self):
+        if self._hcof is None:
+            var_addr = self.model.mf6.get_var_address(
+                "HCOF", self.model.name, self.pkg_name
+            )
+            if var_addr in self.model.mf6.get_input_var_names():
+                self._hcof = self.model.mf6.get_value_ptr(var_addr)
+            else:
+                return
+
+        return np.copy(self._hcof)
+
+    @hcof.setter
+    def hcof(self, values):
+        if self._hcof is None:
+            return
+
+        self.__hcof = values
 
 
 class ListPackage(PackageBase):
@@ -269,10 +308,10 @@ class ArrayPackage(PackageBase):
                 "pkg_name",
                 "pkg_type",
                 "var_addrs",
-                "_variables",
-                "_bound_vars",
-                "_advanced_vars"
         ):
+            super().__setattr__(item, value)
+
+        elif item.startswith("_"):
             super().__setattr__(item, value)
 
         elif item in self._variables._ptrs:
