@@ -34,6 +34,31 @@ class Simulation:
         return s
 
     @property
+    def allow_convergence(self):
+        """
+        Returns a boolean value that specifies if the user will allow the
+        model to converge. Default is True
+        """
+        for model in self.models:
+            if not model.allow_convergence:
+                return False
+        return True
+
+    @allow_convergence.setter
+    def allow_convergence(self, value):
+        """
+        Method to set the allow_convergence flag
+
+        Parameters
+        ----------
+        value : bool
+            if True (default) model converges if solution converges, if False
+            model will continue solving after solution converges.
+        """
+        for model in self.models:
+            model.allow_convergence = value
+
+    @property
     def subcomponent_count(self):
         """
         Returns the number of subcomponents in the simulation
@@ -60,6 +85,15 @@ class Simulation:
         Returns a list of Model objects associated with the simulation
         """
         return [v for _, v in self._models.items()]
+
+    @property
+    def iteration(self):
+        return self._iteration
+
+    @iteration.setter
+    def iteration(self, value):
+        if isinstance(value, int):
+            self._iteration = value
 
     @property
     def kper(self):

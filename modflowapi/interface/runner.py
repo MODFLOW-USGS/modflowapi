@@ -31,8 +31,7 @@ def run_model(dll, sim_path, callback, verbose=False):
         for name in mf6.get_input_var_names():
             foo.write(f"{name}\n")
 
-    for model in sim.models:
-        callback(model, Callbacks.initialize)
+    callback(sim, Callbacks.initialize)
 
     has_converged = False
     current_time = mf6.get_current_time()
@@ -50,37 +49,33 @@ def run_model(dll, sim_path, callback, verbose=False):
             )
 
         for sol_id, maxiter in sim.solutions.items():
-            models = []
+            models = {}
+            solution = {sol_id: maxiter}
             for model in sim.models:
                 if sol_id == model.solution_id:
-                    models.append(model)
+                    models[model.name.lower()] = model
 
-            # can we prepare and finalize the solutions for all
+            sim_grp = Simulation(mf6, models, solution)
             mf6.prepare_solve(sol_id)
-            # check on the simulation group solving and think about how to
-            # solve, as a group of models or single models in serial...
-            for ix, model in enumerate(models):
-                if sim.kper != kperold[sol_id - 1]:
-                    callback(model, Callbacks.stress_period)
-                    if ix + 1 == len(models):
-                        kperold[sol_id - 1] += 1
-                elif current_time == 0:
-                    callback(model, Callbacks.stress_period)
+            if sim.kper != kperold[sol_id - 1]:
+                callback(sim_grp, Callbacks.stress_period)
+                kperold[sol_id - 1] += 1
+            elif current_time == 0:
+                callback(sim_grp, Callbacks.stress_period)
 
-                kiter = 0
-                callback(model, Callbacks.timestep_start)
+            kiter = 0
+            callback(sim_grp, Callbacks.timestep_start)
 
-                while kiter < maxiter:
-                    model.iteration = kiter
-                    callback(model, Callbacks.iteration_start)
-                    has_converged = mf6.solve(sol_id)
-                    callback(model, Callbacks.iteration_end)
-                    kiter += 1
-                    if has_converged:
-                        break
+            while kiter < maxiter:
+                sim_grp.iteration = kiter
+                callback(sim_grp, Callbacks.iteration_start)
+                has_converged = mf6.solve(sol_id)
+                callback(sim_grp, Callbacks.iteration_end)
+                kiter += 1
+                if has_converged and sim_grp.allow_convergence:
+                    break
 
-                callback(model, Callbacks.timestep_end)
-
+            callback(sim_grp, Callbacks.timestep_end)
             mf6.finalize_solve(sol_id)
 
         mf6.finalize_time_step()

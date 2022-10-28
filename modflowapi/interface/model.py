@@ -1,4 +1,4 @@
-from .pakbase import ListPackage, ArrayPackage
+from .pakbase import ListPackage, ArrayPackage, AdvancedPackage
 import numpy as np
 
 
@@ -133,15 +133,6 @@ class Model:
         super().__setattr__(key, value)
 
     @property
-    def iteration(self):
-        return self._iteration
-
-    @iteration.setter
-    def iteration(self, value):
-        if isinstance(value, int):
-            self._iteration = value
-
-    @property
     def kper(self):
         return self.mf6.get_value("TDIS/KPER")[0] - 1
 
@@ -266,7 +257,6 @@ class Model:
         """
         Method to get/set all package names within the model
         """
-        var_addrs = self.mf6.get_input_var_names()
         pak_types = {}
         for addr in self.mf6.get_input_var_names():
             tmp = addr.split("/")
@@ -288,15 +278,18 @@ class Model:
             pkg_type = self._pak_type[ix].lower()
             if pkg_type in self.pkg_types:
                 basepackage = self.pkg_types[pkg_type]
-                package = type(
-                    f"{pkg_type[0].upper()}{pkg_type[1:]}Package",
-                    (basepackage,),
-                    {"__init__": __init__}
-                )
-                package = package(basepackage, self, pkg_type, pkg_name)
-                self.package_dict[pkg_name.lower()] = package
+            else:
+                basepackage = AdvancedPackage
 
-    def get_package(self, pkg_name) -> ListPackage or ArrayPackage:
+            package = type(
+                f"{pkg_type[0].upper()}{pkg_type[1:]}Package",
+                (basepackage,),
+                {"__init__": __init__}
+            )
+            package = package(basepackage, self, pkg_type, pkg_name)
+            self.package_dict[pkg_name.lower()] = package
+
+    def get_package(self, pkg_name) -> ListPackage or ArrayPackage or AdvancedPackage:
         """
         Method to get a package
 

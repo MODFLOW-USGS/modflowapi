@@ -15,7 +15,7 @@ pkgvars = {
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("head"))
+        ("bound", ("head",))
     ],
     "drn": [
         "nbound",
@@ -68,7 +68,7 @@ pkgvars = {
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ('flux', 'rhs', 'hcof')),
+        ("bound", ('flux',)),
     ],
 }
 
@@ -101,33 +101,34 @@ class PackageBase:
         self._advanced_var_names = None
 
         var_addrs = []
-        for var in pkgvars[self.pkg_type]:
-            if isinstance(var, tuple):
-                bound_vars = []
-                for bv in var[-1]:
-                    t = bv.split(":")
-                    if len(t) == 2:
-                        # this is a repeating variable
-                        addr = self.model.mf6.get_var_address(
-                            t[-1].upper(), self.model.name, self.pkg_name
-                        )
-                        nrep = self.model.mf6.get_value(addr)[0]
-                        if nrep > 1:
-                            for rep in range(nrep):
-                                bound_vars.append(f"{t[0]}{rep}")
+        if self._child_type != "advanced":
+            for var in pkgvars[self.pkg_type]:
+                if isinstance(var, tuple):
+                    bound_vars = []
+                    for bv in var[-1]:
+                        t = bv.split(":")
+                        if len(t) == 2:
+                            # this is a repeating variable
+                            addr = self.model.mf6.get_var_address(
+                                t[-1].upper(), self.model.name, self.pkg_name
+                            )
+                            nrep = self.model.mf6.get_value(addr)[0]
+                            if nrep > 1:
+                                for rep in range(nrep):
+                                    bound_vars.append(f"{t[0]}{rep}")
+                            else:
+                                bound_vars.append(t[0])
                         else:
                             bound_vars.append(t[0])
-                    else:
-                        bound_vars.append(t[0])
 
-                self._bound_vars = var[-1]
-                var = var[0]
+                    self._bound_vars = var[-1]
+                    var = var[0]
 
-            var_addrs.append(
-                self.model.mf6.get_var_address(
-                    var.upper(), self.model.name, self.pkg_name
+                var_addrs.append(
+                    self.model.mf6.get_var_address(
+                        var.upper(), self.model.name, self.pkg_name
+                    )
                 )
-            )
 
         self.var_addrs = var_addrs
         self._variables_adv = AdvancedInput(self)
@@ -364,3 +365,21 @@ class ArrayPackage(PackageBase):
 
         """
         self._variables.set_array(item, array)
+
+
+class AdvancedPackage(PackageBase):
+    """
+    Container for advanced data packages
+
+    Parameters
+    ----------
+    model : Model
+        modflowapi model object
+    pkg_type : str
+        package type. Ex. "RCH"
+    pkg_name : str
+        package name (in the mf6 variables)
+    """
+    def __init__(self, model, pkg_type, pkg_name):
+        super().__init__(model, pkg_type, pkg_name.upper(), "advanced")
+

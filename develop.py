@@ -2,7 +2,8 @@ import modflowapi
 from modflowapi import Callbacks
 
 
-def my_function(ml, step):
+def my_function(sim, step):
+    ml = sim.test_model
     if step == Callbacks.stress_period:
         rchs = ml.rch
         rcha = ml.rcha_0
@@ -30,8 +31,9 @@ def my_function(ml, step):
         chk = chd.stress_period_data.values
 
 
-def my_other_function(ml, step):
+def my_other_function(sim, step):
     # make sure that DISV is working
+    ml = sim.models[0]
     if step == Callbacks.timestep_start:
         k11 = ml.npf.k11
         k11[0:10] *= 30
@@ -41,17 +43,19 @@ def my_other_function(ml, step):
         print('break')
 
 
-def yet_another_function(ml, step):
+def yet_another_function(sim, step):
     # make sure that DISU is working
+    ml = sim.models[0]
     if step == Callbacks.timestep_start:
         k11 = ml.npf.k11
         print('break')
 
 
-def two_model_function(ml, step):
+def two_model_function(sim, step):
     # check multi-model simulations
-    if step == Callbacks.timestep_start:
-        print(f"{ml.name}")
+    for ml in sim.models:
+        if step == Callbacks.timestep_start:
+            print(f"{ml.name}")
 
 
 if __name__ == "__main__":
