@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from xmipy.errors import InputError
 
 
 class ListInput(object):
@@ -121,7 +123,6 @@ class ListInput(object):
                 )
                 recarray[name] = self.parent.model.usertonode[nodes] + 1
 
-            # todo: adjust this
             if name in self.parent._bound_vars:
                 idx = self.parent._bound_vars.index(name)
                 bname = "bound"  # ? this will probably need to change
@@ -171,6 +172,16 @@ class ListInput(object):
         """
         Setter method to update the current stress_period_data
         """
+        self._recarray_to_ptr(recarray)
+
+    @property
+    def dataframe(self):
+        recarray = self._ptr_to_recarray()
+        return pd.DataFrame.from_records(recarray)
+
+    @dataframe.setter
+    def dataframe(self, dataframe):
+        recarray = dataframe.to_records(index=False)
         self._recarray_to_ptr(recarray)
 
 
@@ -318,8 +329,6 @@ class AdvancedInput(object):
     ----------
     parent : ArrayPackage
         modflowapi ArrayPackage object
-    var_addrs : list, None
-        optional list of variable addresses
     mf6 : ModflowApi, None
         optional ModflowApi object
     """
@@ -356,7 +365,6 @@ class AdvancedInput(object):
             depending on data type and length
         """
         if name.lower() in self._ptrs:
-            # todo: checks for array size, etc...
             return self._ptrs[name.lower()]
 
         if self.parent is not None:
@@ -368,10 +376,9 @@ class AdvancedInput(object):
                 name.upper(), model.upper(), package.upper()
             )
 
-        # todo: change the error to use xmi.errors.InputError
         try:
             values = self.mf6.get_value_ptr(var_addr)
-        except Exception:
+        except InputError:
             values = self.mf6.get_value(var_addr)
 
         self._ptrs[name.lower()] = values

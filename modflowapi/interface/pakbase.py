@@ -59,11 +59,6 @@ pkgvars = {
         "ss",
         "sy"
     ],
-    # "mvr": [
-    #     "id1",
-    #     "id2",
-    #     "value"
-    # ],
     "wel": [
         "maxbound",
         "nbound",
@@ -276,14 +271,14 @@ class ListPackage(PackageBase):
 
 class ArrayPackage(PackageBase):
     """
-    Package object for "array based" input packages such as NPF, DIS, RCHA
+    Package object for "array based" input packages such as NPF, DIS,
 
     Parameters
     ----------
     model : Model
         modflowapi model object
     pkg_type : str
-        package type. Ex. "RCH"
+        package type. Ex. "DIS"
     pkg_name : str
         package name (in the mf6 variables)
     """

@@ -10,6 +10,10 @@ class Simulation:
     ----------
     mf6 : ModflowApi
         initialized ModflowApi object
+    models : dict
+        dictionary of model_name: modflowapi.interface.Model objects
+    solutions : dict
+        dictionary of solution_id: maxiters
 
     """
     def __init__(self, mf6, models, solutions):
@@ -28,9 +32,9 @@ class Simulation:
 
     def __repr__(self):
         s = self.__doc__
-        s += f"Number of models: {len(self._models)}"
+        s += f"Number of models: {len(self._models)}:"
         for name, obj in self._models.items():
-            s += f"{name} : {type(obj)}"
+            s += f"\n\t{name} : {type(obj)}"
         return s
 
     @property
