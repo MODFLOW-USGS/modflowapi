@@ -5,6 +5,11 @@ from modflowapi import Callbacks
 def my_function(sim, step):
     ml = sim.test_model
     if step == Callbacks.stress_period:
+        npf = ml.npf
+        a = npf._variables
+        a.k33[:, 0:5, 0:5] = 10
+
+
         rchs = ml.rch
         rcha = ml.rcha_0
         vars = rcha.advanced_vars

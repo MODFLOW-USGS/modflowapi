@@ -232,6 +232,8 @@ class ArrayInput:
                 self._ptrs[reduced] = values
                 self._reduced_to_var_addr[reduced] = var_addr
 
+    # todo: need a wrapper and then a getitem/setitem call
+
     def __getattr__(self, item):
         """
         Dynamic method to get modflow varaibles as an attribute
