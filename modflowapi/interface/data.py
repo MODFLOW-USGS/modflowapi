@@ -16,6 +16,7 @@ class ListInput(object):
     mf6 : ModflowApi, None
         optional ModflowApi object
     """
+
     def __init__(self, parent, var_addrs=None, mf6=None):
         self.parent = parent
         if self.parent is not None:
@@ -30,10 +31,14 @@ class ListInput(object):
             self.mf6 = mf6
 
         self._ptrs = {}
-        self._nodevars = ('nodelist',)
-        self._boundvars = ('bound', )
-        self._maxbound = [0, ]
-        self._nbound = [0, ]
+        self._nodevars = ("nodelist",)
+        self._boundvars = ("bound",)
+        self._maxbound = [
+            0,
+        ]
+        self._nbound = [
+            0,
+        ]
         self._dtype = []
         self._reduced_to_var_addr = {}
         self._set_stress_period_data()
@@ -81,7 +86,7 @@ class ListInput(object):
             values = np.copy(ptr)
             if name in self._boundvars:
                 for ix, nm in enumerate(self.parent._bound_vars):
-                    recarray[nm][0:self._nbound[0]] = values[:, ix]
+                    recarray[nm][0 : self._nbound[0]] = values[:, ix]
             else:
                 values = values.ravel()
                 if name in self._nodevars:
@@ -91,7 +96,7 @@ class ListInput(object):
                         zip(*np.unravel_index(values, self.parent.model.shape))
                     )
 
-                recarray[name][0:self._nbound[0]] = values
+                recarray[name][0 : self._nbound[0]] = values
 
         return recarray
 
@@ -130,7 +135,8 @@ class ListInput(object):
                     # todo: resize will need to be updated at some point!
                     dtype = self._ptrs[bname].dtype
                     x = np.zeros(
-                        (len(recarray), self._ptrs[bname].shape[1]), dtype=dtype
+                        (len(recarray), self._ptrs[bname].shape[1]),
+                        dtype=dtype,
                     )
                     x[:, idx] = recarray[name]
 
@@ -197,6 +203,7 @@ class ArrayPointer:
     mf6 : ModflowApi
         optional ModflowApi object
     """
+
     def __init__(self, parent, var_addr, mf6=None):
         self._ptr = None
         self.parent = parent
@@ -208,9 +215,7 @@ class ArrayPointer:
             self.mf6 = self.parent.model.mf6
         else:
             if mf6 is None:
-                raise AssertionError(
-                    "mf6 must be supplied if parent is None"
-                )
+                raise AssertionError("mf6 must be supplied if parent is None")
         self._set_array()
 
     def _set_array(self):
@@ -280,6 +285,7 @@ class ArrayInput:
     mf6 : ModflowApi, None
         optional ModflowApi object
     """
+
     def __init__(self, parent, var_addrs=None, mf6=None):
         self._ptrs = {}
         self.parent = parent
@@ -297,8 +303,12 @@ class ArrayInput:
             self.var_addrs = var_addrs
             self.mf6 = mf6
 
-        self._maxbound = [0, ]
-        self._nbound = [0, ]
+        self._maxbound = [
+            0,
+        ]
+        self._nbound = [
+            0,
+        ]
         self._reduced_to_var_addr = {}
         self._set_arrays()
 
@@ -336,8 +346,7 @@ class ArrayInput:
             "mf6",
             "_maxbound",
             "_nbound",
-            "_reduced_to_var_addr"
-
+            "_reduced_to_var_addr",
         ):
             super().__setattr__(item, value)
 
@@ -440,6 +449,7 @@ class AdvancedInput(object):
     mf6 : ModflowApi, None
         optional ModflowApi object
     """
+
     def __init__(self, parent, mf6=None):
         self._ptrs = {}
         self.parent = parent
@@ -448,9 +458,7 @@ class AdvancedInput(object):
             self.mf6 = self.parent.model.mf6
         else:
             if mf6 is None:
-                raise AssertionError(
-                    "mf6 must be supplied if parent is None"
-                )
+                raise AssertionError("mf6 must be supplied if parent is None")
             self.mf6 = mf6
 
     def get_variable(self, name, model=None, package=None):

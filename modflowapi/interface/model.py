@@ -11,11 +11,7 @@ disvars = {
             "nrow",
             "ncol",
         ],
-        "shape": [
-            "nlay",
-            "nrow",
-            "ncol"
-        ]
+        "shape": ["nlay", "nrow", "ncol"],
     },
     "disu": {
         "shape": [
@@ -23,7 +19,6 @@ disvars = {
             "ncpl",
         ]
     },
-
 }
 
 
@@ -39,6 +34,7 @@ class Model:
         modflow model name. ex. "GWF_1"
 
     """
+
     def __init__(self, mf6, name):
         self.mf6 = mf6
         self.name = name
@@ -66,7 +62,7 @@ class Model:
             "npf": ArrayPackage,
             "rch": ListPackage,
             "sto": ArrayPackage,
-            "wel": ListPackage
+            "wel": ListPackage,
         }
         self.package_dict = {}
         self.allow_convergence = True
@@ -84,8 +80,10 @@ class Model:
         s = f"{self.name}, "
         shape = self.shape
         if self.dis_type == "dis":
-            s += f"{shape[0]} Layer, {shape[1]} Row, {shape[2]}, " \
-                 f"Column model\n"
+            s += (
+                f"{shape[0]} Layer, {shape[1]} Row, {shape[2]}, "
+                f"Column model\n"
+            )
 
         elif self.dis_type == "disu":
             if len(shape) == 2:
@@ -247,12 +245,13 @@ class Model:
             nodeuser = np.arange(nodes).astype(int)
             nodereduced = np.copy(nodeuser)
         else:
-            nodeuser = self.mf6.get_value(
-                f"{self.name}/{self.dis_name}/NODEUSER"
-            ) - 1
-            nodereduced = self.mf6.get_value(
-                f"{self.name}/{self.dis_name}/NODEREDUCED"
-            ) - 1
+            nodeuser = (
+                self.mf6.get_value(f"{self.name}/{self.dis_name}/NODEUSER") - 1
+            )
+            nodereduced = (
+                self.mf6.get_value(f"{self.name}/{self.dis_name}/NODEREDUCED")
+                - 1
+            )
 
         self._nodetouser = nodeuser
         self._usertonode = nodereduced
@@ -288,12 +287,14 @@ class Model:
             package = type(
                 f"{pkg_type[0].upper()}{pkg_type[1:]}Package",
                 (basepackage,),
-                {"__init__": __init__}
+                {"__init__": __init__},
             )
             package = package(basepackage, self, pkg_type, pkg_name)
             self.package_dict[pkg_name.lower()] = package
 
-    def get_package(self, pkg_name) -> ListPackage or ArrayPackage or AdvancedPackage:
+    def get_package(
+        self, pkg_name
+    ) -> ListPackage or ArrayPackage or AdvancedPackage:
         """
         Method to get a package
 

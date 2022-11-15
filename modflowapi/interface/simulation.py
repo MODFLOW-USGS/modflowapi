@@ -16,6 +16,7 @@ class Simulation:
         dictionary of solution_id: maxiters
 
     """
+
     def __init__(self, mf6, models, solutions):
         self.mf6 = mf6
         self._models = models

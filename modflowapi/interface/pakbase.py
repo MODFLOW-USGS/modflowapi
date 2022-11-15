@@ -1,28 +1,13 @@
 import numpy as np
 
-from .data  import ListInput, ArrayInput, AdvancedInput
+from .data import ListInput, ArrayInput, AdvancedInput
 
 
 # Note: HFB variables are not accessible in the memory manager 10/7/2022
 pkgvars = {
-    "dis": [
-        "top",
-        "bot",
-        "area",
-        "idomain"
-    ],
-    "chd": [
-        "nbound",
-        "maxbound",
-        "nodelist",
-        ("bound", ("head",))
-    ],
-    "drn": [
-        "nbound",
-        "maxbound",
-        "nodelist",
-        ("bound", ("elev", "cond"))
-    ],
+    "dis": ["top", "bot", "area", "idomain"],
+    "chd": ["nbound", "maxbound", "nodelist", ("bound", ("head",))],
+    "drn": ["nbound", "maxbound", "nodelist", ("bound", ("elev", "cond"))],
     "evt": [
         "nbound",
         "maxbound",
@@ -30,40 +15,21 @@ pkgvars = {
         ("bound", ("surface", "rate", "depth"))
         # "pxdp:NSEG", "petm:NSEG"
     ],
-    "ghb": [
-        "nbound",
-        "maxbound",
-        "nodelist",
-        ("bound", ("bhead", "cond"))
-    ],
-    "ic": [
-        "strt"
-    ],
-    "npf": [
-        "k11",
-        "k22",
-        "k33",
-        "angle1",
-        "angle2",
-        "angle3",
-        "icelltype"
-    ],
+    "ghb": ["nbound", "maxbound", "nodelist", ("bound", ("bhead", "cond"))],
+    "ic": ["strt"],
+    "npf": ["k11", "k22", "k33", "angle1", "angle2", "angle3", "icelltype"],
     "rch": [
         "maxbound",
         "nbound",
         "nodelist",
         ("bound", ("recharge",)),
     ],
-    "sto": [
-        "iconvert",
-        "ss",
-        "sy"
-    ],
+    "sto": ["iconvert", "ss", "sy"],
     "wel": [
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ('flux',)),
+        ("bound", ("flux",)),
     ],
 }
 
@@ -85,6 +51,7 @@ class PackageBase:
         type of child input package
 
     """
+
     def __init__(self, model, pkg_type, pkg_name, child_type):
         self.model = model
         self.pkg_name = pkg_name
@@ -160,8 +127,10 @@ class PackageBase:
             )
 
         values = self._variables_adv.get_variable(name)
-        if values.size == self.model.nodetouser.size \
-                and self._child_type == "array":
+        if (
+            values.size == self.model.nodetouser.size
+            and self._child_type == "array"
+        ):
             array = np.full(self.model.size, np.nan)
             array[self.model.nodetouser] = values
             return array
@@ -238,8 +207,9 @@ class ListPackage(PackageBase):
     pkg_name : str
         package name (in the mf6 variables)
     """
+
     def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper(), 'list')
+        super().__init__(model, pkg_type, pkg_name.upper(), "list")
 
         self._variables = ListInput(self)
 
@@ -282,8 +252,9 @@ class ArrayPackage(PackageBase):
     pkg_name : str
         package name (in the mf6 variables)
     """
+
     def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper(), 'array')
+        super().__init__(model, pkg_type, pkg_name.upper(), "array")
 
         self._variables = ArrayInput(self)
 
@@ -300,10 +271,10 @@ class ArrayPackage(PackageBase):
         modflow variable storage and updates to the data object class
         """
         if item in (
-                'model',
-                "pkg_name",
-                "pkg_type",
-                "var_addrs",
+            "model",
+            "pkg_name",
+            "pkg_type",
+            "var_addrs",
         ):
             super().__setattr__(item, value)
 
@@ -375,6 +346,6 @@ class AdvancedPackage(PackageBase):
     pkg_name : str
         package name (in the mf6 variables)
     """
+
     def __init__(self, model, pkg_type, pkg_name):
         super().__init__(model, pkg_type, pkg_name.upper(), "advanced")
-
