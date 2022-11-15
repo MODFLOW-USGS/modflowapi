@@ -151,7 +151,7 @@ class Simulation:
             raise KeyError(f"Model name {model_id} is invalid")
 
         else:
-            raise TypeError(f"A string or int must be supplied to get model")
+            raise TypeError("A string or int must be supplied to get model")
 
     @staticmethod
     def load(mf6):

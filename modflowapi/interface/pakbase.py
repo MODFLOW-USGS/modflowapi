@@ -260,7 +260,7 @@ class ArrayPackage(PackageBase):
 
     def __repr__(self):
         s = f"{self.pkg_type.upper()} Package: {self.pkg_name} \n"
-        s += f" Accessible variables include:\n"
+        s += " Accessible variables include:\n"
         for var_name in self.variable_names:
             s += f" {var_name} \n"
         return s
