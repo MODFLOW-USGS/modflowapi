@@ -6,9 +6,10 @@ def my_function(sim, step):
     ml = sim.test_model
     if step == Callbacks.stress_period:
         npf = ml.npf
-        a = npf._variables
-        a.k33[:, 0:5, 0:5] = 10
-
+        k33 = npf.k33
+        npf.k33[:, 0:5, 0:5] = 10
+        t = npf.k33.values
+        # a.k33[:, 0:5, 0:5] = 10
 
         rchs = ml.rch
         rcha = ml.rcha_0
@@ -65,7 +66,7 @@ def two_model_function(sim, step):
 
 if __name__ == "__main__":
     import os
-    dll = os.path.join("..", "trunk", "bin", "libmf6.dll")
+    dll = os.path.join(".", "bin", "libmf6.dll")
 
     sim_pth = os.path.join(".", "examples", "test_model")
     modflowapi.run_model(dll, sim_pth, my_function, verbose=True)

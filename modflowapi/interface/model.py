@@ -177,6 +177,10 @@ class Model:
         return list(self.package_dict.keys())
 
     @property
+    def package_types(self):
+        return [package.package_type for package in self.package_list]
+
+    @property
     def shape(self):
         """
         Returns a tuple of the model shape
