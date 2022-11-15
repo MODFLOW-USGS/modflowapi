@@ -9,6 +9,7 @@ author_dict = {
     "Martijn Russcher": "Martijn.Russcher@deltares.nl",
     "Christian D. Langevin": "langevin@usgs.gov",
     "Julian Hofer": "Julian.Hofer@deltares.nl",
+    "Joshua D. Larsen": "jlarsen@usgs.gov"
 }
 __author__ = ", ".join(author_dict.keys())
 __author_email__ = ", ".join(s for _, s in author_dict.items())
@@ -44,6 +45,8 @@ setup(
     platforms="Windows, Mac OS-X, Linux",
     install_requires=[
         "xmipy",
+        "numpy",
+        "pandas"
     ],
     python_requires=">=3.6",
     packages=find_namespace_packages(exclude=("etc",)),
