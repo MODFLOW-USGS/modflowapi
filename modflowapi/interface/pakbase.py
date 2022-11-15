@@ -311,7 +311,7 @@ class ArrayPackage(PackageBase):
             super().__setattr__(item, value)
 
         elif item in self._variables._ptrs:
-            self._variables.set_array(item, value)
+            self._variables.set_ptr(item, value)
 
         else:
             raise AttributeError(f"{item}")
@@ -321,7 +321,7 @@ class ArrayPackage(PackageBase):
         Method to dynamically get modflow variables by attribute
         """
         if item in self._variables._ptrs:
-            return self._variables.get_array(item)
+            return self._variables.get_ptr(item)
         else:
             return super().__getattribute__(item)
 

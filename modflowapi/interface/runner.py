@@ -12,8 +12,28 @@ class Callbacks(Enum):
     iteration_end = 5
 
 
-def run_model(dll, sim_path, callback, verbose=False):
+def run_model(dll, sim_path, callback, verbose=False, _develop=False):
+    """
+    Method to run a Modflow simulation using the MODFLOW-API
+    with a callback function
 
+    Parameters
+    ----------
+    dll : str
+        path to the Modflow6 shared object
+    sim_path : str
+        path to the Modflow6 simulation
+    callback : method
+        user defined method that intercepts the simulation
+        progress and allows for input variable adjustments on the fly
+    verbose : bool
+        flag for verbose output from the simulation runner
+    _develop : bool
+        flag that dumps a list of all mf6 api variable addresses to text
+        file named "var_list.txt". This is primarily used for interface
+        development purposes and bug fixes within the modflowapi python
+        package.
+    """
     mf6 = ModflowApi(
         dll,
         working_directory=sim_path,
@@ -27,9 +47,10 @@ def run_model(dll, sim_path, callback, verbose=False):
     mf6.initialize()
     sim = Simulation.load(mf6)
 
-    with open("var_list.txt", "w") as foo:
-        for name in mf6.get_input_var_names():
-            foo.write(f"{name}\n")
+    if _develop:
+        with open("var_list.txt", "w") as foo:
+            for name in mf6.get_input_var_names():
+                foo.write(f"{name}\n")
 
     callback(sim, Callbacks.initialize)
 

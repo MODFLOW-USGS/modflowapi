@@ -185,6 +185,88 @@ class ListInput(object):
         self._recarray_to_ptr(recarray)
 
 
+class ArrayPointer:
+    """
+    Data object for storing single pointers and working with array based input data
+
+    Parameters
+    ----------
+    parent : ?
+    var_addr : str
+        variable pointer location
+    mf6 : ModflowApi
+        optional ModflowApi object
+    """
+    def __init__(self, parent, var_addr, mf6=None):
+        self._ptr = None
+        self.parent = parent
+        self._mapping = None
+        self.name = None
+        self.var_addr = var_addr
+
+        if self.parent is not None:
+            self.mf6 = self.parent.model.mf6
+        else:
+            if mf6 is None:
+                raise AssertionError(
+                    "mf6 must be supplied if parent is None"
+                )
+        self._set_array()
+
+    def _set_array(self):
+        ivn = self.mf6.get_input_var_names()
+        if self.var_addr in ivn:
+            values = self.mf6.get_value_ptr(self.var_addr)
+            reduced = self.var_addr.split("/")[-1].lower()
+            self._ptr = values
+            self.name = reduced
+
+    def __getitem__(self, item):
+        return self.values[item]
+
+    def __setitem__(self, key, value):
+        array = self.values
+        array[key] = value
+        self.values = array
+
+    @property
+    def values(self):
+        """
+        Method to get an array from modflow
+
+        Returns
+        -------
+        np.array of modflow data
+        """
+
+        value = np.ones((self.parent.model.size,)) * np.nan
+        value[self.parent.model.nodetouser] = self._ptr
+        return value.reshape(self.parent.model.shape)
+
+    @values.setter
+    def values(self, array):
+        """
+        Method to update the modflow pointer arrays
+
+        Parameters
+        ----------
+        array : np.array
+            numpy array
+
+        """
+
+        if not isinstance(array, np.ndarray):
+            raise TypeError()
+        if array.size != self.parent.model.size:
+            raise ValueError(
+                f"{self.name} size {array.size} is not equal to "
+                f"modflow variable size {self.parent.model.size}"
+            )
+        array = array.ravel()
+        array = array[self.parent.model.nodetouser]
+        self._ptr[:] = array
+
+
 class ArrayInput:
     """
     Data object for storing pointers and working with array based input data
@@ -227,19 +309,17 @@ class ArrayInput:
         ivn = self.mf6.get_input_var_names()
         for var_addr in self.var_addrs:
             if var_addr in ivn:
-                values = self.mf6.get_value_ptr(var_addr)
+                ptr = ArrayPointer(self.parent, var_addr)
                 reduced = var_addr.split("/")[-1].lower()
-                self._ptrs[reduced] = values
+                self._ptrs[reduced] = ptr
                 self._reduced_to_var_addr[reduced] = var_addr
-
-    # todo: need a wrapper and then a getitem/setitem call
 
     def __getattr__(self, item):
         """
         Dynamic method to get modflow varaibles as an attribute
         """
         if item in self._ptrs:
-            return self.get_array(item)
+            return self._ptrs[item]
         else:
             return super(ArrayInput).__getattribute__(item)
 
@@ -262,7 +342,8 @@ class ArrayInput:
             super().__setattr__(item, value)
 
         elif item in self._ptrs:
-            self.set_array(item, value)
+            if isinstance(value, ArrayPointer):
+                self._ptrs[item] = value
         else:
             raise AttributeError(f"{item} is not a vaild attribute")
 
@@ -272,6 +353,42 @@ class ArrayInput:
         Returns a list of valid array names that can be accessed by the user
         """
         return list(sorted(self._ptrs.keys()))
+
+    def get_ptr(self, item):
+        """
+        Method to get the ArrayPointer object
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name: Ex. "k11"
+
+        Returns
+        -------
+        ArrayPointer object
+        """
+        if item in self._ptrs:
+            return self._ptrs[item]
+
+    def set_ptr(self, item, ptr):
+        """
+        Method to set an ArrayPointer object
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name: Ex. "k11"
+        ptr : ArrayPointer
+            ArrayPointer object
+        """
+        if item in self._ptrs:
+            if isinstance(ptr, ArrayPointer):
+                self._ptrs[item] = ptr
+            else:
+                raise TypeError("An ArrayPointer object must be provided")
+
+        else:
+            raise KeyError(f"{item} is not accessible in this package")
 
     def get_array(self, item):
         """
@@ -287,9 +404,7 @@ class ArrayInput:
         np.array of modflow data
         """
         if item in self._ptrs:
-            value = np.ones((self.parent.model.size,)) * np.nan
-            value[self.parent.model.nodetouser] = self._ptrs[item]
-            return value.reshape(self.parent.model.shape)
+            return self._ptrs[item].values
         else:
             raise KeyError(f"{item} is not accessible in this package")
 
@@ -306,16 +421,7 @@ class ArrayInput:
 
         """
         if item in self._ptrs:
-            if not isinstance(array, np.ndarray):
-                raise TypeError()
-            if array.size != self.parent.model.size:
-                raise ValueError(
-                    f"{item} size {array.size} is not equal to "
-                    f"modflow variable size {self.parent.model.size}"
-                )
-            array = array.ravel()
-            array = array[self.parent.model.nodetouser]
-            self._ptrs[item][:] = array
+            self._ptrs[item].values = array
         else:
             raise KeyError(
                 f"{item} is not a valid variable name for this package"
