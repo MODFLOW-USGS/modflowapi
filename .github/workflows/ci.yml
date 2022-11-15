@@ -97,7 +97,7 @@ jobs:
         pylint --jobs=2 --errors-only --exit-zero ./modflowapi
 
   autotest:
-    name: standard installation
+    name: modflowapi autotests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
