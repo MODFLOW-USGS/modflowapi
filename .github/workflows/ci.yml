@@ -39,8 +39,8 @@ jobs:
 
     - name: Base installation
       run: |
-        pip install . --use-feature=in-tree-build
-
+        pip install -e .
+        
     - name: Print version
       run: |
         python -c "import modflowapi; print(modflowapi.__version__)"
