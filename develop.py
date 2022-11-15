@@ -79,3 +79,4 @@ if __name__ == "__main__":
 
     sim_pth = os.path.join(".", "examples", "two_models")
     modflowapi.run_model(dll, sim_pth, two_model_function, verbose=True)
+    # test
