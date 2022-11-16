@@ -123,7 +123,7 @@ jobs:
       - name: Install Python dependencies
         shell: bash -l {0}
         run: |
-          if [${{ matrix.os }} != "Windows"]; then
+          if [${{ matrix.os }} != windows-latest]; then
             pip install --upgrade pip
             pip install .
             pip install ".[test]"
