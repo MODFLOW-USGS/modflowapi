@@ -121,14 +121,14 @@ jobs:
           cache-dependency-path: setup.cfg
 
       - name: Install Python dependencies
-        if: runner.os != "Windows"
+        if: runner.os != 'Windows'
         run: |
           pip install --upgrade pip
           pip install .
           pip install ".[test]"
 
       - name: Install Python dependencies Windows
-        if: runner.os == "Windows"
+        if: runner.os == 'Windows'
         run: |
           python.exe -m pip install --upgrade pip
           python.exe -m pip install .
