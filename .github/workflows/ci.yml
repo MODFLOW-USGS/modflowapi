@@ -121,10 +121,17 @@ jobs:
           cache-dependency-path: setup.cfg
 
       - name: Install Python dependencies
+        shell: bash -l {0}
         run: |
-          pip install --upgrade pip
-          pip install .
-          pip install ".[test]"
+          if [runner.os != "Windows"]; then
+            pip install --upgrade pip
+            pip install .
+            pip install ".[test]"
+          else
+            python.exe -m pip install --upgrade pip
+            python.exe -m pip install .
+            python.exe -m pip install ".[test]"
+          fi
 
       - name: Install modflow executables
         uses: modflowpy/install-modflow-action@v1
