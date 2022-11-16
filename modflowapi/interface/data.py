@@ -211,6 +211,7 @@ class ArrayPointer:
         self._mapping = None
         self.name = None
         self.var_addr = var_addr
+        self._vshape = None
 
         if self.parent is not None:
             self.mf6 = self.parent.model.mf6
@@ -224,6 +225,7 @@ class ArrayPointer:
         if self.var_addr in ivn:
             values = self.mf6.get_value_ptr(self.var_addr)
             reduced = self.var_addr.split("/")[-1].lower()
+            self._vshape = values.shape
             self._ptr = values
             self.name = reduced
 
@@ -246,7 +248,7 @@ class ArrayPointer:
         """
 
         value = np.ones((self.parent.model.size,)) * np.nan
-        value[self.parent.model.nodetouser] = self._ptr
+        value[self.parent.model.nodetouser] = self._ptr.ravel()
         return value.reshape(self.parent.model.shape)
 
     @values.setter
@@ -268,8 +270,11 @@ class ArrayPointer:
                 f"{self.name} size {array.size} is not equal to "
                 f"modflow variable size {self.parent.model.size}"
             )
+
         array = array.ravel()
         array = array[self.parent.model.nodetouser]
+        if len(self._vshape) > 1:
+            array.shape = self._vshape
         self._ptr[:] = array
 
 

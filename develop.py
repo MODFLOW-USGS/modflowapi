@@ -72,7 +72,7 @@ if __name__ == "__main__":
     dll = os.path.join(".", "bin", "libmf6.dll")
 
     sim_pth = os.path.join(".", "examples", "test_model")
-    modflowapi.run_model(dll, sim_pth, my_function, verbose=True)
+    modflowapi.run_model(dll, sim_pth, my_function, verbose=True, _develop=True)
 
     sim_pth = os.path.join(".", "examples", "disv_model")
     modflowapi.run_model(dll, sim_pth, my_other_function, verbose=True)

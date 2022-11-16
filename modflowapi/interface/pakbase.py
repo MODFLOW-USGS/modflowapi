@@ -83,7 +83,7 @@ class PackageBase:
         self._child_type = child_type
         self._rhs = None
         self._hcof = None
-        self._bound_vars = None
+        self._bound_vars = []
         self._advanced_var_names = None
 
         var_addrs = []
@@ -132,6 +132,8 @@ class PackageBase:
                 if t[0] == self.model.name and t[1] == self.pkg_name:
                     if t[-1].lower() in self._bound_vars:
                         continue
+                    elif self.pkg_type not in pkgvars:
+                        adv_vars.append(t[-1].lower())
                     elif t[-1].lower() in pkgvars[self.pkg_type]:
                         continue
                     else:
@@ -373,3 +375,9 @@ class AdvancedPackage(PackageBase):
 
     def __init__(self, model, pkg_type, pkg_name):
         super().__init__(model, pkg_type, pkg_name.upper(), "advanced")
+
+    def __repr__(self):
+        s = f"{self.pkg_type.upper()} Package: {self.pkg_name} \n"
+        s += " Advanced Package, variables only accessible through\n"
+        s += " get_advanced_var() and set_advanced_var() methods"
+        return s

@@ -182,7 +182,7 @@ class Model:
 
     @property
     def package_types(self):
-        return [package.package_type for package in self.package_list]
+        return list(set([package.pkg_type for package in self.package_list]))
 
     @property
     def shape(self):

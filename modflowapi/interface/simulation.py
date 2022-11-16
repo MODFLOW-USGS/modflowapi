@@ -21,6 +21,7 @@ class Simulation:
         self.mf6 = mf6
         self._models = models
         self._solutions = solutions
+        self._iteration = -1
 
     def __getattr__(self, item):
         """
@@ -117,16 +118,16 @@ class Simulation:
     @property
     def nstp(self):
         """
-        Returns the number of time steps
+        Returns the total number of time steps
         """
-        return self.mf6.get_value("TDIS/NSTP")[0] - 1
+        return self.mf6.get_value("TDIS/NSTP")[0]
 
     @property
     def nper(self):
         """
-        Returns the number of stress periods
+        Returns the total number of stress periods
         """
-        return self.mf6.get_value("TDIS/NPER")[0] - 1
+        return self.mf6.get_value("TDIS/NPER")[0]
 
     def get_model(self, model_id):
         """
