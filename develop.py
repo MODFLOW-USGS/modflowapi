@@ -9,7 +9,10 @@ def my_function(sim, step):
         k33 = npf.k33
         npf.k33[:, 0:5, 0:5] = 10
         t = npf.k33.values
-        # a.k33[:, 0:5, 0:5] = 10
+
+        dis = ml.dis
+        area = ml.dis.area.values
+        top = ml.dis.top.values
 
         rchs = ml.rch
         rcha = ml.rcha_0

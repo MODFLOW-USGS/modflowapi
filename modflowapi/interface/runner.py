@@ -1,6 +1,8 @@
 from .. import ModflowApi
 from .simulation import Simulation
 from enum import Enum
+import pathlib
+import platform
 
 
 class Callbacks(Enum):
@@ -34,6 +36,15 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
         development purposes and bug fixes within the modflowapi python
         package.
     """
+    ext = pathlib.Path(dll).suffix
+    if not ext:
+        if platform.system().lower() == "windows":
+            dll += ".dll"
+        elif platform.system().lower() == "linux":
+            dll += ".so"
+        else:
+            dll += ".dylib"
+
     mf6 = ModflowApi(
         dll,
         working_directory=sim_path,

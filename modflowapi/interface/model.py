@@ -266,7 +266,7 @@ class Model:
         """
         Method to get/set all package names within the model
         """
-        pak_types = {}
+        pak_types = {"dis": "DIS"}
         for addr in self.mf6.get_input_var_names():
             tmp = addr.split("/")
             if addr.endswith("PACKAGE_TYPE") and tmp[0] == self.name:
