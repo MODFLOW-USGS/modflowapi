@@ -63,6 +63,12 @@ class Model:
             "rch": ListPackage,
             "sto": ArrayPackage,
             "wel": ListPackage,
+            # gwt
+            "adv": ArrayPackage,
+            "cnc": ListPackage,
+            "ist": ArrayPackage,
+            "mst": ArrayPackage,
+            "src": ListPackage,
         }
         self.package_dict = {}
         self.allow_convergence = True

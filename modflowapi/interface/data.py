@@ -197,7 +197,8 @@ class ArrayPointer:
 
     Parameters
     ----------
-    parent : ?
+    parent : ArrayPackage
+        ArrayPackage object
     var_addr : str
         variable pointer location
     mf6 : ModflowApi
