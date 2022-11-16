@@ -32,14 +32,7 @@ pkgvars = {
         ("bound", ("flux",)),
     ],
     # gwt model
-    "adv": [
-        "diffc",
-        "alh",
-        "alv",
-        "ath1",
-        "ath2",
-        "atv"
-    ],
+    "adv": ["diffc", "alh", "alv", "ath1", "ath2", "atv"],
     "cnc": [
         "maxbound",
         "nbound",
@@ -53,21 +46,15 @@ pkgvars = {
         "decay",
         "decay_sorbed",
         "bulk_density",
-        "distcoef"
+        "distcoef",
     ],
-    "mst": [
-        "porosity",
-        "decay",
-        "decay_sorbed",
-        "bulk_density",
-        "distcoef"
-    ],
+    "mst": ["porosity", "decay", "decay_sorbed", "bulk_density", "distcoef"],
     "src": [
         "maxbound",
         "nbound",
         "nodelist",
         ("bound", ("smassrate",)),
-    ]
+    ],
 }
 
 
