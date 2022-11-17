@@ -238,7 +238,11 @@ class Model:
         return self._usertonode
 
     @property
-    def head(self):
+    def X(self):
+        """
+        Returns the solution array. Ex. GFW models return heads, GWT
+        returns a concentration array, etc...
+        """
         return self.mf6.get_value(self.mf6.get_var_address("X", self.name))
 
     def _set_node_mapping(self):
