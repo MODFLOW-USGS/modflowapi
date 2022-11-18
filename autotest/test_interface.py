@@ -1,5 +1,5 @@
 import pytest
-import os
+import pathlib
 from modflowapi.interface.pakbase import (
     ArrayPackage,
     ListPackage,
@@ -10,12 +10,11 @@ import shutil
 import numpy as np
 
 so = "libmf6"
-data_pth = os.path.join("..", "examples")
-tmp_pth = os.path.join(".", "temp")
+data_pth = pathlib.Path("../examples")
 
 
 @pytest.mark.order(1)
-def test_dis_model():
+def test_dis_model(tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -91,8 +90,8 @@ def test_dis_model():
                 raise AssertionError("Pointer not being set properly")
 
     name = "test_model"
-    sim_pth = os.path.join(data_pth, name)
-    test_pth = os.path.join(tmp_pth, name)
+    sim_pth = data_pth / name
+    test_pth = tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -102,7 +101,7 @@ def test_dis_model():
 
 
 @pytest.mark.order(2)
-def test_disv_model():
+def test_disv_model(tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -178,8 +177,8 @@ def test_disv_model():
                 raise AssertionError("Pointer not being set properly")
 
     name = "disv_model"
-    sim_pth = os.path.join(data_pth, name)
-    test_pth = os.path.join(tmp_pth, name)
+    sim_pth = data_pth / name
+    test_pth = tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -189,7 +188,7 @@ def test_disv_model():
 
 
 @pytest.mark.order(3)
-def test_disu_model():
+def test_disu_model(tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -259,8 +258,8 @@ def test_disu_model():
                 raise AssertionError("Pointer not being set properly")
 
     name = "disu_model"
-    sim_pth = os.path.join(data_pth, name)
-    test_pth = os.path.join(tmp_pth, name)
+    sim_pth = data_pth / name
+    test_pth = tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -269,7 +268,7 @@ def test_disu_model():
         raise Exception(e)
 
 @pytest.mark.order(4)
-def test_two_models():
+def test_two_models(tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -285,8 +284,8 @@ def test_two_models():
                 raise AssertionError("Invalid number of models")
 
     name = "two_models"
-    sim_pth = os.path.join(data_pth, name)
-    test_pth = os.path.join(tmp_pth, name)
+    sim_pth = data_pth / name
+    test_pth = tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
