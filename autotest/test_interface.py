@@ -10,7 +10,7 @@ import shutil
 import numpy as np
 
 so = "libmf6"
-data_pth = pathlib.Path("../examples")
+data_pth = pathlib.Path("../examples/data")
 
 
 @pytest.mark.order(1)
