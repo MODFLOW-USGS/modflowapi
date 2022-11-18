@@ -55,7 +55,7 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
     #     sl = pathlib.Path(dll).absolute()
 
     mf6 = ModflowApi(
-        sl,
+        dll,
         working_directory=sim_path,
     )
 
