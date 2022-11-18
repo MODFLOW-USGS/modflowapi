@@ -3,6 +3,7 @@ from .simulation import Simulation
 from enum import Enum
 import pathlib
 import platform
+import shutil
 
 
 class Callbacks(Enum):
@@ -45,8 +46,16 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
         else:
             dll += ".dylib"
 
+    sl = shutil.which(dll)
+    if sl is None:
+        raise Exception(
+            f"The program {dll} does not exist or is not executable"
+        )
+    else:
+        sl = pathlib.Path(dll).absolute()
+
     mf6 = ModflowApi(
-        dll,
+        sl,
         working_directory=sim_path,
     )
 
