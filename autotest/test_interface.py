@@ -89,7 +89,7 @@ def test_dis_model(tmpdir):
             if not np.allclose((spd["flux"] * factor), spd2["flux"]):
                 raise AssertionError("Pointer not being set properly")
 
-    name = "test_model"
+    name = "dis_model"
     sim_pth = data_pth / name
     test_pth = tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)

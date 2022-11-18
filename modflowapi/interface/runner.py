@@ -3,7 +3,6 @@ from .simulation import Simulation
 from enum import Enum
 import pathlib
 import platform
-import shutil
 
 
 class Callbacks(Enum):
