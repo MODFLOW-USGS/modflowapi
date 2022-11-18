@@ -145,4 +145,5 @@ jobs:
         working-directory: ./autotest
         run: |
           export PATH="~/.local/bin:$PATH"
+          chmod u+x ~/.local/bin/*
           pytest -v
