@@ -1,4 +1,5 @@
 # imports
+from .version import __version__
 from modflowapi.modflowapi import ModflowApi
-
-__version__ = "0.0.1"
+from . import interface
+from .interface.runner import run_model, Callbacks
