@@ -113,8 +113,6 @@ jobs:
       # check out repo
       - name: Checkout repo
         uses: actions/checkout@v3
-        run: |
-          git pull --no-rebase
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -147,5 +145,6 @@ jobs:
         working-directory: ./autotest
         shell: bash -l {0}
         run: |
+          git pull --no-rebase
           chmod a+x libmf6*
           pytest -v
