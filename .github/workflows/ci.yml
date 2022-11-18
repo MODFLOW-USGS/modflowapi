@@ -138,13 +138,12 @@ jobs:
       - name: Install modflow executables
         uses: modflowpy/install-modflow-action@v1
         with:
-          path: ~/.local/bin
+          path: ~/work/modflowapi/modflowapi/autotest
           repo: modflow6-nightly-build
 
       - name: Run autotests
         working-directory: ./autotest
         shell: bash -l {0}
         run: |
-          export PATH="~/.local/bin:$PATH"
-          chmod a+x ~/.local/bin/*
+          chmod a+x libmf6*
           pytest -v
