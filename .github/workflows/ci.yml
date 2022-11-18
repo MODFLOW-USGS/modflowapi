@@ -26,10 +26,10 @@ jobs:
 
     # check out repo
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3
 
     - name: Setup Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
 
@@ -59,13 +59,13 @@ jobs:
     steps:
     # check out repo
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3
 
     # Standard python fails on Windows without GDAL installation. Using
     # standard python here since only linting on linux.
     # Use standard bash shell with standard python
     - name: Setup Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
         cache: 'pip'
