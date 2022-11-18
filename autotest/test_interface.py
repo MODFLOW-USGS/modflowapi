@@ -9,7 +9,7 @@ from modflowapi import Callbacks, run_model
 import shutil
 import numpy as np
 
-so = "./libmf6"
+so = "libmf6"
 data_pth = pathlib.Path("../examples/data")
 
 
