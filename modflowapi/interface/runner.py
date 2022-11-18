@@ -38,6 +38,7 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
         package.
     """
     ext = pathlib.Path(dll).suffix
+    dll = str(dll)
     if not ext:
         if platform.system().lower() == "windows":
             dll += ".dll"
