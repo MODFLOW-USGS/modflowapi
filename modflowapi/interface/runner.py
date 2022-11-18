@@ -44,7 +44,7 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
         elif platform.system().lower() == "linux":
             dll = "./" + dll + ".so"
         else:
-            dll = "./" + dll + ".dylib"
+            dll += ".dylib"
 
     # sl = shutil.which(dll)
     # if sl is None:
