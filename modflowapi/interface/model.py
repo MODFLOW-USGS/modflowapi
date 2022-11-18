@@ -39,6 +39,8 @@ class Model:
         self.mf6 = mf6
         self.name = name
         self._id = mf6.get_value(f"{name}/ID")[0]
+        if self._id < 1:
+            self._id = 1
         self._solnid = mf6.get_value(f"{name}/IDSOLN")[0]
         grid_type = mf6.get_grid_type(self._id)
         if grid_type == "rectilinear":

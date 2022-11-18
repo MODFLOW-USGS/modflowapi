@@ -80,7 +80,7 @@ def run_model(dll, sim_path, callback, verbose=False, _develop=False):
                 f"Timestep {sim.kstp + 1}"
             )
 
-        for sol_id, maxiter in sim.solutions.items():
+        for sol_id, maxiter in sorted(sim.solutions.items()):
             models = {}
             solution = {sol_id: maxiter}
             for model in sim.models:

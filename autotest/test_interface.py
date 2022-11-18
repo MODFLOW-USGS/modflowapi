@@ -95,7 +95,10 @@ def test_dis_model():
     test_pth = os.path.join(tmp_pth, name)
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
-    run_model(so, test_pth, callback)
+    try:
+        run_model(so, test_pth, callback)
+    except Exception as e:
+        raise Exception(e)
 
 
 @pytest.mark.order(2)
@@ -179,7 +182,10 @@ def test_disv_model():
     test_pth = os.path.join(tmp_pth, name)
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
-    run_model(so, test_pth, callback)
+    try:
+        run_model(so, test_pth, callback)
+    except Exception as e:
+        raise Exception(e)
 
 
 @pytest.mark.order(3)
@@ -257,8 +263,10 @@ def test_disu_model():
     test_pth = os.path.join(tmp_pth, name)
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
-    run_model(so, test_pth, callback)
-
+    try:
+        run_model(so, test_pth, callback)
+    except Exception as e:
+        raise Exception(e)
 
 @pytest.mark.order(4)
 def test_two_models():
@@ -281,4 +289,7 @@ def test_two_models():
     test_pth = os.path.join(tmp_pth, name)
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
-    run_model(so, test_pth, callback)
+    try:
+        run_model(so, test_pth, callback)
+    except Exception as e:
+        raise Exception(e)
