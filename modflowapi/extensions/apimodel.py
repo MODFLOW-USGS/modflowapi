@@ -105,7 +105,7 @@ class ApiModel:
         for typ, baseobj in [
             ("ArrayPackage", ArrayPackage),
             ("ListPackage", ListPackage),
-            ("AdvancedPackage", AdvancedPackage)
+            ("AdvancedPackage", AdvancedPackage),
         ]:
             s += f"  {typ} objects:\n"
             for name, obj in self.package_dict.items():
