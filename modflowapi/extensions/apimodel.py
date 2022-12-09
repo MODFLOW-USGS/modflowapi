@@ -2,23 +2,12 @@ from .pakbase import ListPackage, ArrayPackage, AdvancedPackage
 import numpy as np
 
 
-disvars = {
-    "dis": {
-        "vars": [
-            "nodes",
-            "nodesuser",
-            "nlay",
-            "nrow",
-            "ncol",
-        ],
-        "shape": ["nlay", "nrow", "ncol"],
-    },
-    "disu": {
-        "shape": [
-            "nlay",
-            "ncpl",
-        ]
-    },
+gridshape = {
+    "dis": ["nlay", "nrow", "ncol"],
+    "disu": [
+        "nlay",
+        "ncpl",
+    ],
 }
 
 
@@ -147,19 +136,23 @@ class ApiModel:
 
     @property
     def kper(self):
-        return self.mf6.get_value("TDIS/KPER")[0] - 1
+        var_addr = self.mf6.get_var_address("KPER", "TDIS")
+        return self.mf6.get_value(var_addr)[0] - 1
 
     @property
     def kstp(self):
-        return self.mf6.get_value("TDIS/KSTP")[0] - 1
+        var_addr = self.mf6.get_var_address("KSTP", "TDIS")
+        return self.mf6.get_value(var_addr)[0] - 1
 
     @property
     def nstp(self):
-        return self.mf6.get_value("TDIS/NSTP")[0] - 1
+        var_addr = self.mf6.get_var_address("NSTP", "TDIS")
+        return self.mf6.get_value(var_addr)[0]
 
     @property
     def nper(self):
-        return self.mf6.get_value("TDIS/NPER")[0] - 1
+        var_addr = self.mf6.get_var_address("NPER", "TDIS")
+        return self.mf6.get_value(var_addr)[0]
 
     @property
     def subcomponent_id(self):
@@ -200,7 +193,7 @@ class ApiModel:
         """
         ivn = self.mf6.get_input_var_names()
         if self._shape is None:
-            shape_vars = disvars[self.dis_type]["shape"]
+            shape_vars = gridshape[self.dis_type]
             shape = []
             for var in shape_vars:
                 var_addr = self.mf6.get_var_address(
@@ -259,18 +252,20 @@ class ApiModel:
         Sets the node mapping arrays NODEUSER and NODEREDUCED for mapping
         user arrays to modflow's internal arrays
         """
-        nodes = self.mf6.get_value(f"{self.name}/{self.dis_name}/NODES")
+        node_addr = self.mf6.get_var_address("NODES", self.name, self.dis_name)
+        nodes = self.mf6.get_value(node_addr)
         if nodes[0] == self.size:
             nodeuser = np.arange(nodes).astype(int)
             nodereduced = np.copy(nodeuser)
         else:
-            nodeuser = (
-                self.mf6.get_value(f"{self.name}/{self.dis_name}/NODEUSER") - 1
+            nodeuser_addr = self.mf6.get_var_address(
+                "NODEUSER", self.name, self.dis_name
             )
-            nodereduced = (
-                self.mf6.get_value(f"{self.name}/{self.dis_name}/NODEREDUCED")
-                - 1
+            nodeuser = self.mf6.get_value(nodeuser_addr) - 1
+            nodereduced_addr = self.mf6.get_var_address(
+                "NODEREDUCED", self.name, self.dis_name
             )
+            nodereduced = self.mf6.get_value(nodereduced_addr) - 1
 
         self._nodetouser = nodeuser
         self._usertonode = nodereduced

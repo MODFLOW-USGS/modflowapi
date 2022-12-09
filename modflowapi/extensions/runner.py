@@ -119,7 +119,7 @@ def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
         current_time = mf6.get_current_time()
 
         if not has_converged:
-            print(f"MODEL: {model.name} DID NOT CONVERGE")
+            print(f"Simulation group: {sim_grp} DID NOT CONVERGE")
 
     try:
         mf6.finalize()

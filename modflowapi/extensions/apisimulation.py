@@ -106,28 +106,32 @@ class ApiSimulation:
         """
         Returns the current stress period
         """
-        return self.mf6.get_value("TDIS/KPER")[0] - 1
+        var_addr = self.mf6.get_var_address("KPER", "TDIS")
+        return self.mf6.get_value(var_addr)[0] - 1  # "TDIS/KPER"
 
     @property
     def kstp(self):
         """
         Returns the current time step
         """
-        return self.mf6.get_value("TDIS/KSTP")[0] - 1
+        var_addr = self.mf6.get_var_address("KSTP", "TDIS")
+        return self.mf6.get_value(var_addr)[0] - 1
 
     @property
     def nstp(self):
         """
         Returns the total number of time steps
         """
-        return self.mf6.get_value("TDIS/NSTP")[0]
+        var_addr = self.mf6.get_var_address("NSTP", "TDIS")
+        return self.mf6.get_value(var_addr)[0]
 
     @property
     def nper(self):
         """
         Returns the total number of stress periods
         """
-        return self.mf6.get_value("TDIS/NPER")[0]
+        var_addr = self.mf6.get_var_address("NPER", "TDIS")
+        return self.mf6.get_value(var_addr)[0]
 
     def get_model(self, model_id):
         """
@@ -170,9 +174,10 @@ class ApiSimulation:
             t = variable.split("/")
             if len(t) == 3:
                 name = t[0]
+                id_var_addr = mf6.get_var_address("ID", name)
                 if name.startswith("SLN"):
                     continue
-                if f"{name.upper()}/ID" not in variables:
+                if id_var_addr not in variables:
                     continue
 
                 if name not in model_names:
@@ -186,9 +191,11 @@ class ApiSimulation:
         for variable in variables:
             t = variable.split("/")
             if len(t) == 2:
-                if t[0].lower() in models or t[0] == "TDIS":
+                name = t[0]
+                id_var_addr = mf6.get_var_address("ID", name)
+                if name.lower() in models or name == "TDIS":
                     continue
-                if f"{t[0]}/ID" not in variables:
+                if id_var_addr not in variables:
                     continue
 
                 solution_names.append(t[0])
@@ -196,8 +203,10 @@ class ApiSimulation:
         solution_names = list(set(solution_names))
         solution_dict = {}
         for name in solution_names:
-            sid = mf6.get_value(f"{name}/ID")[0]
-            maxiter = mf6.get_value(f"{name}/MXITER")[0]
+            sid_var_addr = mf6.get_var_address("ID", name)
+            sid = mf6.get_value(sid_var_addr)[0]
+            maxiter_var_addr = mf6.get_var_address("MXITER", name)
+            maxiter = mf6.get_value(maxiter_var_addr)[0]
             solution_dict[sid] = maxiter
 
         solutions = solution_dict
