@@ -27,10 +27,12 @@ class ApiModel:
     def __init__(self, mf6, name):
         self.mf6 = mf6
         self.name = name
-        self._id = mf6.get_value(f"{name}/ID")[0]
+        _id_addr = mf6.get_var_address("ID", name)
+        self._id = mf6.get_value(_id_addr)[0]
         if self._id < 1:
             self._id = 1
-        self._solnid = mf6.get_value(f"{name}/IDSOLN")[0]
+        _solnid = mf6.get_var_address("IDSOLN", name)
+        self._solnid = mf6.get_value(_solnid)[0]
         grid_type = mf6.get_grid_type(self._id)
         if grid_type == "rectilinear":
             self.dis_type = "dis"
