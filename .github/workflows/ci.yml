@@ -145,5 +145,6 @@ jobs:
         working-directory: ./autotest
         shell: bash -l {0}
         run: |
+          git pull --no-rebase
           chmod a+x libmf6*
           pytest -v

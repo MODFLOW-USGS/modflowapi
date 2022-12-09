@@ -1,6 +1,6 @@
 from pathlib import Path
 from shutil import copytree
-from modflowapi import run_model
+from modflowapi import run_simulation
 
 import pytest
 from autotest.conftest import is_nested
@@ -45,7 +45,7 @@ def test_mf6_example_simulations(tmpdir, mf6_example_namfiles):
             # 'mf6gwf') because coupled models refer to each other with relative paths
             wrkdir = Path(tmpdir / model_path.name) if nested else tmpdir
             try:
-                run_model(dll, wrkdir, callback, verbose=True)
+                run_simulation(dll, wrkdir, callback, verbose=True)
             except Exception as e:
                 raise Exception(e)
 

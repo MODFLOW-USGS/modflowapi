@@ -1,11 +1,11 @@
 import pytest
 import pathlib
-from modflowapi.interface.pakbase import (
+from modflowapi.extensions.pakbase import (
     ArrayPackage,
     ListPackage,
     AdvancedPackage,
 )
-from modflowapi import Callbacks, run_model
+from modflowapi import Callbacks, run_simulation
 import shutil
 import numpy as np
 
@@ -21,7 +21,7 @@ def test_dis_model(tmpdir):
 
         Parameters
         ----------
-        sim : modflowapi.Simulation object
+        sim : modflowapi.ApiSimulation object
         step : Enum
             step is the simulation step defined by Callbacks
         """
@@ -37,14 +37,14 @@ def test_dis_model(tmpdir):
                 raise AssertionError("Invalid number of package types")
 
             if model.shape != (1, 10, 10):
-                raise AssertionError("Model shape is incorrect")
+                raise AssertionError("ApiModel shape is incorrect")
 
             if model.size != 100:
-                raise AssertionError("Model size is incorrect")
+                raise AssertionError("ApiModel size is incorrect")
 
             if (model.kper, model.kstp) != (-1, -1):
                 raise AssertionError(
-                    "Model has advanced prior to initialization callback"
+                    "ApiModel has advanced prior to initialization callback"
                 )
 
             dis = model.dis
@@ -62,7 +62,7 @@ def test_dis_model(tmpdir):
             rch = model.rch
             if len(rch) != 2:
                 raise AssertionError(
-                    "Model object not returning multiple packages"
+                    "ApiModel object not returning multiple packages"
                 )
 
             idomain = dis.idomain.values
@@ -95,7 +95,7 @@ def test_dis_model(tmpdir):
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
-        run_model(so, test_pth, callback)
+        run_simulation(so, test_pth, callback)
     except Exception as e:
         raise Exception(e)
 
@@ -108,7 +108,7 @@ def test_disv_model(tmpdir):
 
         Parameters
         ----------
-        sim : modflowapi.Simulation object
+        sim : modflowapi.ApiSimulation object
         step : Enum
             step is the simulation step defined by Callbacks
         """
@@ -124,14 +124,14 @@ def test_disv_model(tmpdir):
                 raise AssertionError("Invalid number of package types")
 
             if model.shape != (4, 200):
-                raise AssertionError("Model shape is incorrect")
+                raise AssertionError("ApiModel shape is incorrect")
 
             if model.size != 800:
-                raise AssertionError("Model size is incorrect")
+                raise AssertionError("ApiModel size is incorrect")
 
             if (model.kper, model.kstp) != (-1, -1):
                 raise AssertionError(
-                    "Model has advanced prior to initialization callback"
+                    "ApiModel has advanced prior to initialization callback"
                 )
 
             dis = model.dis
@@ -149,7 +149,7 @@ def test_disv_model(tmpdir):
             chd = model.chd
             if len(chd) != 2:
                 raise AssertionError(
-                    "Model object not returning multiple packages"
+                    "ApiModel object not returning multiple packages"
                 )
 
             top = dis.top.values
@@ -182,7 +182,7 @@ def test_disv_model(tmpdir):
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
-        run_model(so, test_pth, callback)
+        run_simulation(so, test_pth, callback)
     except Exception as e:
         raise Exception(e)
 
@@ -195,7 +195,7 @@ def test_disu_model(tmpdir):
 
         Parameters
         ----------
-        sim : modflowapi.Simulation object
+        sim : modflowapi.ApiSimulation object
         step : Enum
             step is the simulation step defined by Callbacks
         """
@@ -211,14 +211,14 @@ def test_disu_model(tmpdir):
                 raise AssertionError("Invalid number of package types")
 
             if model.shape != (121,):
-                raise AssertionError("Model shape is incorrect")
+                raise AssertionError("ApiModel shape is incorrect")
 
             if model.size != 121:
-                raise AssertionError("Model size is incorrect")
+                raise AssertionError("ApiModel size is incorrect")
 
             if (model.kper, model.kstp) != (-1, -1):
                 raise AssertionError(
-                    "Model has advanced prior to initialization callback"
+                    "ApiModel has advanced prior to initialization callback"
                 )
 
             dis = model.dis
@@ -263,7 +263,7 @@ def test_disu_model(tmpdir):
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
-        run_model(so, test_pth, callback)
+        run_simulation(so, test_pth, callback)
     except Exception as e:
         raise Exception(e)
 
@@ -275,7 +275,7 @@ def test_two_models(tmpdir):
 
         Parameters
         ----------
-        sim : modflowapi.Simulation object
+        sim : modflowapi.ApiSimulation object
         step : Enum
             step is the simulation step defined by Callbacks
         """
@@ -289,6 +289,6 @@ def test_two_models(tmpdir):
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
-        run_model(so, test_pth, callback)
+        run_simulation(so, test_pth, callback)
     except Exception as e:
         raise Exception(e)
