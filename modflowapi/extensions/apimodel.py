@@ -1,4 +1,9 @@
-from .pakbase import ListPackage, ArrayPackage, AdvancedPackage, package_factory
+from .pakbase import (
+    ListPackage,
+    ArrayPackage,
+    AdvancedPackage,
+    package_factory,
+)
 import numpy as np
 
 
@@ -24,6 +29,7 @@ class ApiMbase:
     pkg_types : dict
         dictionary of package types and ApiPackage class types
     """
+
     def __init__(self, mf6, name, pkg_types):
         self.mf6 = mf6
         self.name = name
@@ -353,4 +359,3 @@ class ApiModel(ApiMbase):
 
         self._nodetouser = nodeuser
         self._usertonode = nodereduced
-

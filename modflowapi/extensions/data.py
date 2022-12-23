@@ -88,7 +88,9 @@ class ListInput(object):
             values = np.copy(ptr)
             if name in self._boundvars:
                 for ix, nm in enumerate(self.parent._bound_vars):
-                    recarray[nm][0 : self._nbound[0]] = values[0 : self._nbound[0], ix]
+                    recarray[nm][0 : self._nbound[0]] = values[
+                        0 : self._nbound[0], ix
+                    ]
             else:
                 values = values.ravel()
                 if name in self._nodevars:
@@ -98,7 +100,9 @@ class ListInput(object):
                         zip(*np.unravel_index(values, self.parent.model.shape))
                     )
 
-                recarray[name][0 : self._nbound[0]] = values[0 : self._nbound[0]]
+                recarray[name][0 : self._nbound[0]] = values[
+                    0 : self._nbound[0]
+                ]
 
         return recarray
 

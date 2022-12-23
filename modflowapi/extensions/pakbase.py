@@ -56,22 +56,8 @@ pkgvars = {
         ("bound", ("smassrate",)),
     ],
     # exchange model
-    "gwf-gwf": [
-        "nexg",
-        "nodem1",
-        "nodem2",
-        "cl1",
-        "cl2",
-        "ihc"
-    ],
-    "gwt-gwt": [
-        "nexg",
-        "nodem1",
-        "nodem2",
-        "cl1",
-        "cl2",
-        "ihc"
-    ],
+    "gwf-gwf": ["nexg", "nodem1", "nodem2", "cl1", "cl2", "ihc"],
+    "gwt-gwt": ["nexg", "nodem1", "nodem2", "cl1", "cl2", "ihc"],
     # simulation
     "ats": [
         "maxats",
@@ -80,7 +66,7 @@ pkgvars = {
         "dtmin",
         "dtmax",
         "dtadj",
-        "dtfailadj"
+        "dtfailadj",
     ],
     "tdis": [
         "nper",
@@ -89,10 +75,9 @@ pkgvars = {
         "kstp",
         "delt",
         "pertim",
-        "totim,"
-        "perlen",
+        "totim," "perlen",
         "nstp",
-        "tsmult"
+        "tsmult",
     ],
     # solution package
     "sln": [
@@ -117,7 +102,7 @@ pkgvars = {
         "north",
         "iscl",
         "iord",
-    ]
+    ],
 }
 
 
@@ -338,7 +323,9 @@ class ListPackage(PackageBase):
     """
 
     def __init__(self, model, pkg_type, pkg_name, sim_package=False):
-        super().__init__(model, pkg_type, pkg_name.upper(), "list", sim_package)
+        super().__init__(
+            model, pkg_type, pkg_name.upper(), "list", sim_package
+        )
 
         self._variables = ListInput(self)
 
@@ -399,7 +386,9 @@ class ArrayPackage(PackageBase):
     """
 
     def __init__(self, model, pkg_type, pkg_name, sim_package=False):
-        super().__init__(model, pkg_type, pkg_name.upper(), "array", sim_package)
+        super().__init__(
+            model, pkg_type, pkg_name.upper(), "array", sim_package
+        )
 
         self._variables = ArrayInput(self)
 
@@ -495,7 +484,9 @@ class ScalarPackage(PackageBase):
     """
 
     def __init__(self, model, pkg_type, pkg_name, sim_package=False):
-        super().__init__(model, pkg_type, pkg_name.upper(), "scalar", sim_package)
+        super().__init__(
+            model, pkg_type, pkg_name.upper(), "scalar", sim_package
+        )
 
         self._variables = ScalarInput(self)
 
@@ -591,7 +582,9 @@ class AdvancedPackage(PackageBase):
     """
 
     def __init__(self, model, pkg_type, pkg_name, sim_package=False):
-        super().__init__(model, pkg_type, pkg_name.upper(), "advanced", sim_package)
+        super().__init__(
+            model, pkg_type, pkg_name.upper(), "advanced", sim_package
+        )
 
     def __repr__(self):
         s = f"{self.pkg_type.upper()} Package: {self.pkg_name} \n"
@@ -615,8 +608,10 @@ class ApiSlnPackage(ScalarPackage):
     sim_package : bool
         boolean flag for simulation level packages. Ex. TDIS, IMS
     """
+
     def __init__(self, sim, pkg_name):
         from .apimodel import ApiMbase
+
         super().__init__(sim, "sln", pkg_name, sim_package=True)
 
         mdl = ApiMbase(
