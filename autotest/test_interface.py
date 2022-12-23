@@ -9,11 +9,11 @@ from modflowapi import Callbacks, run_simulation
 import shutil
 import numpy as np
 
+pytestmark = pytest.mark.extensions
 so = "libmf6"
 data_pth = pathlib.Path("../examples/data")
 
 
-@pytest.mark.order(1)
 def test_dis_model(tmpdir):
     def callback(sim, step):
         """
@@ -109,7 +109,6 @@ def test_dis_model(tmpdir):
         raise Exception(e)
 
 
-@pytest.mark.order(2)
 def test_disv_model(tmpdir):
     def callback(sim, step):
         """
@@ -196,7 +195,6 @@ def test_disv_model(tmpdir):
         raise Exception(e)
 
 
-@pytest.mark.order(3)
 def test_disu_model(tmpdir):
     def callback(sim, step):
         """
@@ -276,7 +274,7 @@ def test_disu_model(tmpdir):
     except Exception as e:
         raise Exception(e)
 
-@pytest.mark.order(4)
+
 def test_two_models(tmpdir):
     def callback(sim, step):
         """
@@ -301,3 +299,27 @@ def test_two_models(tmpdir):
         run_simulation(so, test_pth, callback)
     except Exception as e:
         raise Exception(e)
+
+
+def test_ats_model(tmpdir):
+    def callback(sim, step):
+        if step == Callbacks.stress_period_start:
+            if sim.kper == 0 and sim.kstp == 0:
+                delt0 = sim.delt
+
+        if step == Callbacks.timestep_start:
+            if sim.kstp == 1:
+                if delt0 == sim.delt:
+                    raise AssertionError(
+                        "ATS routines not reducing timestep length"
+                    )
+
+        name = "ats0"
+        sim_pth = data_pth / name
+        test_pth = tmpdir / name
+        shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
+
+        try:
+            run_simulation(so, test_pth, callback)
+        except Exception as e:
+            raise Exception(e)
