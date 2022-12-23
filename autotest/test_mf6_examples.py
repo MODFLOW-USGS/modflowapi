@@ -8,6 +8,7 @@ from autotest.conftest import is_nested
 pytestmark = pytest.mark.mf6
 dll = "libmf6"
 
+
 def test_mf6_example_simulations(tmpdir, mf6_example_namfiles):
     """
     MF6 examples parametrized by simulation. `mf6_example_namfiles` is a list

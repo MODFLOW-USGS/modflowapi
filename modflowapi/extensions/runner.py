@@ -7,11 +7,12 @@ import platform
 
 class Callbacks(Enum):
     initialize = 0
-    stress_period = 1
-    timestep_start = 2
-    timestep_end = 3
-    iteration_start = 4
-    iteration_end = 5
+    stress_period_start = 1
+    stress_period_end = 2
+    timestep_start = 3
+    timestep_end = 4
+    iteration_start = 5
+    iteration_end = 6
 
 
 def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
@@ -85,32 +86,47 @@ def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
                 f"Timestep {sim.kstp + 1}"
             )
 
-        for sol_id, maxiter in sorted(sim.solutions.items()):
+        for sol_id, slnobj in sorted(sim.solutions.items()):
             models = {}
-            solution = {sol_id: maxiter}
+            maxiter = slnobj.mxiter
+            solution = {sol_id: slnobj}
             for model in sim.models:
                 if sol_id == model.solution_id:
                     models[model.name.lower()] = model
 
-            sim_grp = ApiSimulation(mf6, models, solution)
+            sim_grp = ApiSimulation(
+                mf6, models, solution, sim._exchanges, sim.tdis, sim.ats
+            )
             mf6.prepare_solve(sol_id)
             if sim.kper != kperold[sol_id - 1]:
-                callback(sim_grp, Callbacks.stress_period)
+                callback(sim_grp, Callbacks.stress_period_start)
                 kperold[sol_id - 1] += 1
             elif current_time == 0:
-                callback(sim_grp, Callbacks.stress_period)
+                callback(sim_grp, Callbacks.stress_period_start)
 
             kiter = 0
             callback(sim_grp, Callbacks.timestep_start)
 
-            while kiter < maxiter:
-                sim_grp.iteration = kiter
-                callback(sim_grp, Callbacks.iteration_start)
-                has_converged = mf6.solve(sol_id)
-                callback(sim_grp, Callbacks.iteration_end)
-                kiter += 1
-                if has_converged and sim_grp.allow_convergence:
-                    break
+            if sim_grp.ats_period[0]:
+                mindt = sim_grp.ats_period[-1]
+                while sim_grp.delt > mindt:
+                    sim_grp.iteration = kiter
+                    callback(sim_grp, Callbacks.iteration_start)
+                    has_converged = mf6.solve(sol_id)
+                    callback(sim_grp, Callbacks.iteration_end)
+                    kiter += 1
+                    if has_converged and sim_grp.allow_convergence:
+                        break
+
+            else:
+                while kiter < maxiter:
+                    sim_grp.iteration = kiter
+                    callback(sim_grp, Callbacks.iteration_start)
+                    has_converged = mf6.solve(sol_id)
+                    callback(sim_grp, Callbacks.iteration_end)
+                    kiter += 1
+                    if has_converged and sim_grp.allow_convergence:
+                        break
 
             callback(sim_grp, Callbacks.timestep_end)
             mf6.finalize_solve(sol_id)
@@ -120,6 +136,9 @@ def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
 
         if not has_converged:
             print(f"Simulation group: {sim_grp} DID NOT CONVERGE")
+
+        if sim_grp.nstp == sim_grp.kstp + 1:
+            callback(sim_grp, Callbacks.stress_period_end)
 
     try:
         mf6.finalize()

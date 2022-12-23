@@ -1,4 +1,4 @@
-from .pakbase import ListPackage, ArrayPackage, AdvancedPackage
+from .pakbase import ListPackage, ArrayPackage, AdvancedPackage, package_factory
 import numpy as np
 
 
@@ -11,7 +11,110 @@ gridshape = {
 }
 
 
-class ApiModel:
+class ApiMbase:
+    """
+    Base object for the Models and Exchanges
+
+    Parameters
+    ----------
+    mf6 : ModflowApi
+        initialized ModflowApi object
+    name : str
+        modflow model name. ex. "GWF_1", "GWF-GWF_1"
+    pkg_types : dict
+        dictionary of package types and ApiPackage class types
+    """
+    def __init__(self, mf6, name, pkg_types):
+        self.mf6 = mf6
+        self.name = name
+        self._pkg_names = None
+        self._pak_type = None
+        self.pkg_types = pkg_types
+        self.package_dict = {}
+        self._set_package_names()
+        self._create_package_list()
+
+    @property
+    def package_list(self):
+        """
+        Returns a list of package objects for the model
+        """
+        return [package for _, package in self.package_dict.items()]
+
+    @property
+    def package_names(self):
+        """
+        Returns a list of package names for the model
+        """
+        return list(self.package_dict.keys())
+
+    @property
+    def package_types(self):
+        return list(set([package.pkg_type for package in self.package_list]))
+
+    def _set_package_names(self):
+        """
+        Method to get/set all package names within the model
+        """
+        pak_types = {"dis": "DIS"}
+        for addr in self.mf6.get_input_var_names():
+            tmp = addr.split("/")
+            if addr.endswith("PACKAGE_TYPE") and tmp[0] == self.name:
+                pak_types[tmp[1]] = self.mf6.get_value(addr)[0]
+            elif tmp[0] == self.name and len(tmp) == 2:
+                if tmp[0].startswith("GWF-GWF"):
+                    pak_types[tmp[0]] = "GWF-GWF"
+                    pak_types.pop("dis", None)
+                elif tmp[0].startswith("GWT-GWT"):
+                    pak_types[tmp[0]] = "GWT-GWT"
+                    pak_types.pop("dis", None)
+
+        self._pak_type = list(pak_types.values())
+        self._pkg_names = list(pak_types.keys())
+
+    def _create_package_list(self):
+        """
+        Method to load packages and set up the package dict/list variable
+        """
+        for ix, pkg_name in enumerate(self._pkg_names):
+            pkg_type = self._pak_type[ix].lower()
+            if pkg_type in self.pkg_types:
+                basepackage = self.pkg_types[pkg_type]
+            else:
+                basepackage = AdvancedPackage
+
+            package = package_factory(pkg_type, basepackage)
+            adj_pkg_name = "".join(pkg_type.split("-"))
+
+            if adj_pkg_name.lower() in ("gwfgwf", "gwtgwt"):
+                adj_pkg_name = ""
+            else:
+                adj_pkg_name = pkg_name
+
+            package = package(basepackage, self, pkg_type, adj_pkg_name)
+            self.package_dict[pkg_name.lower()] = package
+
+    def get_package(
+        self, pkg_name
+    ) -> ListPackage or ArrayPackage or AdvancedPackage:
+        """
+        Method to get a package
+
+        Parameters
+        ----------
+        pkg_name : str
+            package name str. Ex. "wel_0"
+        """
+        pkg_name = pkg_name.lower()
+        if pkg_name in self.package_dict:
+            return self.package_dict[pkg_name]
+
+        raise KeyError(
+            f"{pkg_name} is not a valid package name for this model"
+        )
+
+
+class ApiModel(ApiMbase):
     """
     Container to hold MODFLOW model information and load supported packages
 
@@ -25,8 +128,7 @@ class ApiModel:
     """
 
     def __init__(self, mf6, name):
-        self.mf6 = mf6
-        self.name = name
+
         _id_addr = mf6.get_var_address("ID", name)
         self._id = mf6.get_value(_id_addr)[0]
         if self._id < 1:
@@ -45,7 +147,7 @@ class ApiModel:
                 f"Unrecognized discretization type {grid_type}"
             )
 
-        self.pkg_types = {
+        pkg_types = {
             "dis": ArrayPackage,
             "chd": ListPackage,
             "drn": ListPackage,
@@ -63,24 +165,22 @@ class ApiModel:
             "mst": ArrayPackage,
             "src": ListPackage,
         }
-        self.package_dict = {}
+
         self.allow_convergence = True
         self._shape = None
         self._size = None
-        self._pkg_names = None
-        self._pak_type = None
         self._nodetouser = None
         self._usertonode = None
         self._iteration = 0
-        self._set_package_names()
-        self._create_package_list()
+
+        super().__init__(mf6, name, pkg_types)
 
     def __repr__(self):
         s = f"{self.name}, "
         shape = self.shape
         if self.dis_type == "dis":
             s += (
-                f"{shape[0]} Layer, {shape[1]} Row, {shape[2]}, "
+                f"{shape[0]} Layer, {shape[1]} Row, {shape[2]} "
                 f"Column model\n"
             )
 
@@ -171,24 +271,6 @@ class ApiModel:
         return self._solnid
 
     @property
-    def package_list(self):
-        """
-        Returns a list of package objects for the model
-        """
-        return [package for _, package in self.package_dict.items()]
-
-    @property
-    def package_names(self):
-        """
-        Returns a list of package names for the model
-        """
-        return list(self.package_dict.keys())
-
-    @property
-    def package_types(self):
-        return list(set([package.pkg_type for package in self.package_list]))
-
-    @property
     def shape(self):
         """
         Returns a tuple of the model shape
@@ -272,57 +354,3 @@ class ApiModel:
         self._nodetouser = nodeuser
         self._usertonode = nodereduced
 
-    def _set_package_names(self):
-        """
-        Method to get/set all package names within the model
-        """
-        pak_types = {"dis": "DIS"}
-        for addr in self.mf6.get_input_var_names():
-            tmp = addr.split("/")
-            if addr.endswith("PACKAGE_TYPE") and tmp[0] == self.name:
-                pak_types[tmp[1]] = self.mf6.get_value(addr)[0]
-
-        self._pak_type = list(pak_types.values())
-        self._pkg_names = list(pak_types.keys())
-
-    def _create_package_list(self):
-        """
-        Method to load packages and set up the package dict/list variable
-        """
-        # hack for now. need a pkg_type variable for robustness
-        def __init__(self, obj, model, pkg_type, pkg_name):
-            obj.__init__(self, model, pkg_type, pkg_name)
-
-        for ix, pkg_name in enumerate(self._pkg_names):
-            pkg_type = self._pak_type[ix].lower()
-            if pkg_type in self.pkg_types:
-                basepackage = self.pkg_types[pkg_type]
-            else:
-                basepackage = AdvancedPackage
-
-            package = type(
-                f"Api{pkg_type[0].upper()}{pkg_type[1:]}Package",
-                (basepackage,),
-                {"__init__": __init__},
-            )
-            package = package(basepackage, self, pkg_type, pkg_name)
-            self.package_dict[pkg_name.lower()] = package
-
-    def get_package(
-        self, pkg_name
-    ) -> ListPackage or ArrayPackage or AdvancedPackage:
-        """
-        Method to get a package
-
-        Parameters
-        ----------
-        pkg_name : str
-            package name str. Ex. "wel_0"
-        """
-        pkg_name = pkg_name.lower()
-        if pkg_name in self.package_dict:
-            return self.package_dict[pkg_name]
-
-        raise KeyError(
-            f"{pkg_name} is not a valid package name for this model"
-        )

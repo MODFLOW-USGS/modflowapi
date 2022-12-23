@@ -1,10 +1,13 @@
-from .apimodel import ApiModel
+from .apimodel import ApiModel, ApiMbase
+from .apiexchange import ApiExchange
+from .pakbase import ScalarPackage, ListPackage, ApiSlnPackage, package_factory
+import numpy as np
 
 
 class ApiSimulation:
     """
-    ApiSimulation object that holds a modflow simulation info and loads supported
-    models.
+    ApiSimulation object that holds a modflow simulation info and loads
+    supported models.
 
     Parameters
     ----------
@@ -13,15 +16,27 @@ class ApiSimulation:
     models : dict
         dictionary of model_name: modflowapi.extensions.ApiModel objects
     solutions : dict
-        dictionary of solution_id: maxiters
-
+        dictionary of solution_id: solution_name
+    exchanges : dict
+        dictoinary of exchange_name: modflowapi.extensions.ApiExchange objects
+    tdis : ApiTdisPackage
+        time discretization (TDIS) ScalarPackage
+    ats : None or ApiAtsPackage
+        adaptive time step ScalarPackage object
     """
 
-    def __init__(self, mf6, models, solutions):
+    def __init__(self, mf6, models, solutions, exchanges, tdis, ats):
         self.mf6 = mf6
         self._models = models
+        self._exchanges = exchanges
         self._solutions = solutions
         self._iteration = -1
+
+        self.tdis = tdis
+        self.ats = ats
+        self._ats_active = True
+        if ats is None:
+            self._ats_active = False
 
     def __getattr__(self, item):
         """
@@ -34,10 +49,42 @@ class ApiSimulation:
 
     def __repr__(self):
         s = self.__doc__
-        s += f"Number of models: {len(self._models)}:"
+        s += f"Number of models: {len(self._models)}:\n"
         for name, obj in self._models.items():
-            s += f"\n\t{name} : {type(obj)}"
+            s += f"\t{name} : {type(obj)}\n"
+        s += f"Simulation level packages include:\n"
+        s += f"\tSLN: {self.sln}\n"
+        s += f"\tTDIS: {self.tdis}\n"
+        if self.ats_active:
+            s += f"\tATS: {self.ats}\n"
+        if self._exchanges:
+            s += f"\tExchanges include:\n"
+            for name, exchange in self._exchanges.items():
+                f"\t\t{name}: {type(exchange)}\n"
+
         return s
+
+    @property
+    def ats_active(self):
+        """
+        Returns a boolean to indicate if the ATS package is used in this
+        simulation.
+        """
+        return self._ats_active
+
+    @property
+    def ats_period(self):
+        """
+        Returns a boolean to indicate if this is an ATS stress period
+        """
+        # maybe return tuple (bool, dtmin)
+        if self.ats_active:
+            recarray = self.ats.stress_period_data.values
+            idx = np.where(recarray["iperats"] == self.kper + 1)[0]
+            if len(idx) > 0:
+                return True, recarray["dtmin"][idx[0]]
+
+        return False, None
 
     @property
     def allow_convergence(self):
@@ -74,9 +121,20 @@ class ApiSimulation:
     @property
     def solutions(self):
         """
-        Returns a dictionary of solution_id : maxiter
+        Returns a dictionary of solution_id : (name, ApiSlnPackage)
         """
         return self._solutions
+
+    @property
+    def sln(self):
+        """
+        Returns an ApiSolution object
+        """
+        if len(self._solutions) > 1:
+            return list(self._solutions.values())
+        else:
+            for sln in self._solutions.values():
+                return sln
 
     @property
     def model_names(self):
@@ -84,6 +142,14 @@ class ApiSimulation:
         Returns a list of model names
         """
         return list(self._models.keys())
+
+    @property
+    def exchange_names(self):
+        """
+        Returns a list of exchange GWF-GWF names
+        """
+        if self._exchanges.keys():
+            return list(self._exchanges.keys())
 
     @property
     def models(self):
@@ -106,34 +172,37 @@ class ApiSimulation:
         """
         Returns the current stress period
         """
-        var_addr = self.mf6.get_var_address("KPER", "TDIS")
-        return self.mf6.get_value(var_addr)[0] - 1  # "TDIS/KPER"
+        return self.tdis.kper - 1
 
     @property
     def kstp(self):
         """
         Returns the current time step
         """
-        var_addr = self.mf6.get_var_address("KSTP", "TDIS")
-        return self.mf6.get_value(var_addr)[0] - 1
+        return self.tdis.kstp - 1
 
     @property
     def nstp(self):
         """
         Returns the total number of time steps
         """
-        var_addr = self.mf6.get_var_address("NSTP", "TDIS")
-        return self.mf6.get_value(var_addr)[0]
+        return self.tdis.nstp
 
     @property
     def nper(self):
         """
         Returns the total number of stress periods
         """
-        var_addr = self.mf6.get_var_address("NPER", "TDIS")
-        return self.mf6.get_value(var_addr)[0]
+        return self.tdis.nper
 
-    def get_model(self, model_id):
+    @property
+    def delt(self):
+        """
+        Returns the timestep length for the current time step
+        """
+        return self.tdis.delt
+
+    def get_model(self, model_id=None):
         """
         Method to get a model from the simulation object by model name or
         subcomponent id
@@ -143,6 +212,9 @@ class ApiSimulation:
         model_id : str, int
             model name (ex. "GWF_1") or subcomponent id (ex. 1)
         """
+        if model_id is None:
+            model_id = min([model.subcomponent_id for model in self._models])
+
         if isinstance(model_id, int):
             for model in self._models:
                 if model_id == model.subcomponent_id:
@@ -157,6 +229,32 @@ class ApiSimulation:
 
         else:
             raise TypeError("A string or int must be supplied to get model")
+
+    def get_exchange(self, exchange_name=None):
+        """
+        Get a GWF-GWF "model" and all associated simulation level package
+        data (ex. GNC, MVR)
+
+        Parameters
+        ----------
+        exchange_name : str
+            name of the GWF-GWF exchange package
+
+        Returns
+        -------
+            modflowapi.extensions.ApiExchange object
+        """
+        if self.exchange_names is None:
+            raise AssertionError("No exchanges are present in this simulation")
+
+        if exchange_name is None:
+            for _, exg in self._exchanges:
+                return exg
+
+        else:
+            if exchange_name in self._exchanges:
+                return self._exchanges[exchange_name]
+            raise KeyError(f"Exchange name {exchange_name} is invalid")
 
     @staticmethod
     def load(mf6):
@@ -200,15 +298,45 @@ class ApiSimulation:
 
                 solution_names.append(t[0])
 
+        tmpmdl = ApiMbase(mf6, "", {})
         solution_names = list(set(solution_names))
         solution_dict = {}
         for name in solution_names:
             sid_var_addr = mf6.get_var_address("ID", name)
             sid = mf6.get_value(sid_var_addr)[0]
-            maxiter_var_addr = mf6.get_var_address("MXITER", name)
-            maxiter = mf6.get_value(maxiter_var_addr)[0]
-            solution_dict[sid] = maxiter
+            sln = ApiSlnPackage(tmpmdl, name)
+            solution_dict[sid] = sln
 
         solutions = solution_dict
 
-        return ApiSimulation(mf6, models, solutions)
+        # TDIS package construction
+        tdis_constructor = package_factory("tdis", ScalarPackage)
+        tdis = tdis_constructor(
+            ScalarPackage, tmpmdl, "tdis", "tdis", sim_package=True
+        )
+
+        ats = None
+        # ATS package construction
+        for variable in variables:
+            if variable.startswith("ATS"):
+                ats_constructor = package_factory("ats", ListPackage)
+                ats = ats_constructor(
+                    ListPackage, tmpmdl, "ats", "ats", sim_package=True
+                )
+                break
+
+        # get the exchanges
+        exchange_names = []
+        for variable in variables:
+            if variable.startswith("GWF-GWF") or variable.startswith("GWT-GWT"):
+                exchange_name = variable.split("/")[0]
+                if exchange_name not in exchange_names:
+                    exchange_names.append(exchange_name)
+
+        # sim_packages: tdis, gwf-gwf, sln
+        exchanges = {}
+        for exchange_name in exchanges:
+            exchange = ApiExchange(mf6, exchange_name)
+            exchanges[exchange_name.lower()] = exchange
+
+        return ApiSimulation(mf6, models, solutions, exchanges, tdis, ats)

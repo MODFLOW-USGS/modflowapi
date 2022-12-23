@@ -3,7 +3,7 @@ BEGIN options
 END options
 
 BEGIN dimensions
-  MAXBOUND  2
+  MAXBOUND  10
 END dimensions
 
 BEGIN period  1

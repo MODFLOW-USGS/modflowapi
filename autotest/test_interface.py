@@ -69,10 +69,10 @@ def test_dis_model(tmpdir):
             if not isinstance(idomain, np.ndarray):
                 raise TypeError("Expecting a numpy array for idomain")
 
-        elif step == Callbacks.stress_period:
+        elif step == Callbacks.stress_period_start:
             if sim.kstp != 0:
                 raise AssertionError(
-                    "Solution advanced prior to stress_period callback"
+                    "Solution advanced prior to stress_period_start callback"
                 )
 
         elif step == Callbacks.timestep_start:
@@ -88,6 +88,15 @@ def test_dis_model(tmpdir):
             spd2 = sim.test_model.wel.stress_period_data.values
             if not np.allclose((spd["flux"] * factor), spd2["flux"]):
                 raise AssertionError("Pointer not being set properly")
+
+            if sim.kper >= 3 and sim.kstp == 0:
+                spd = sim.test_model.wel.stress_period_data.values
+                nbound0 = sim.test_model.wel.nbound
+                spd.resize((nbound0 + 1), refcheck=False)
+                spd[-1] = ((0, 1, 5), -20)
+                sim.test_model.wel.stress_period_data.values = spd
+                if sim.test_model.wel.nbound != nbound0 + 1:
+                    raise AssertionError("Resize routine not properly working")
 
     name = "dis_model"
     sim_pth = data_pth / name
@@ -156,10 +165,10 @@ def test_disv_model(tmpdir):
             if not isinstance(top, np.ndarray):
                 raise TypeError("Expecting a numpy array for top")
 
-        elif step == Callbacks.stress_period:
+        elif step == Callbacks.stress_period_start:
             if sim.kstp != 0:
                 raise AssertionError(
-                    "Solution advanced prior to stress_period callback"
+                    "Solution advanced prior to stress_period_start callback"
                 )
 
         elif step == Callbacks.timestep_start:
@@ -237,10 +246,10 @@ def test_disu_model(tmpdir):
             if not isinstance(top, np.ndarray):
                 raise TypeError("Expecting a numpy array for top")
 
-        elif step == Callbacks.stress_period:
+        elif step == Callbacks.stress_period_start:
             if sim.kstp != 0:
                 raise AssertionError(
-                    "Solution advanced prior to stress_period callback"
+                    "Solution advanced prior to stress_period_start callback"
                 )
 
         elif step == Callbacks.timestep_start:

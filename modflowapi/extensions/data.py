@@ -31,7 +31,7 @@ class ListInput(object):
             self.mf6 = mf6
 
         self._ptrs = {}
-        self._nodevars = ("nodelist",)
+        self._nodevars = ("nodelist", "nexg", "maxats")
         self._boundvars = ("bound",)
         self._maxbound = [
             0,
@@ -54,7 +54,9 @@ class ListInput(object):
             reduced = var_addr.split("/")[-1].lower()
             if reduced in ("maxbound", "nbound"):
                 setattr(self, f"_{reduced}", values)
-                # self._maxbound = self.mf6.get_value_ptr(var_addr)
+            elif reduced in ("nexg", "maxats"):
+                setattr(self, "_maxbound", values)
+                setattr(self, "_nbound", values)
             else:
                 self._ptrs[reduced] = values
                 self._reduced_to_var_addr[reduced] = var_addr
@@ -86,7 +88,7 @@ class ListInput(object):
             values = np.copy(ptr)
             if name in self._boundvars:
                 for ix, nm in enumerate(self.parent._bound_vars):
-                    recarray[nm][0 : self._nbound[0]] = values[:, ix]
+                    recarray[nm][0 : self._nbound[0]] = values[0 : self._nbound[0], ix]
             else:
                 values = values.ravel()
                 if name in self._nodevars:
@@ -96,7 +98,7 @@ class ListInput(object):
                         zip(*np.unravel_index(values, self.parent.model.shape))
                     )
 
-                recarray[name][0 : self._nbound[0]] = values
+                recarray[name][0 : self._nbound[0]] = values[0 : self._nbound[0]]
 
         return recarray
 
@@ -111,12 +113,13 @@ class ListInput(object):
             numpy recarray of stress period data
 
         """
-        resize = False
         if len(recarray) != self._nbound:
-            resize = True
-            self._nbound[0] = len(recarray)
             if len(recarray) > self._maxbound[0]:
-                self._maxbound[0] = len(recarray)
+                raise AssertionError(
+                    f"Length of stresses ({len(recarray)},) cannot be larger "
+                    f"than maxbound value ({self._maxbound[0]},)"
+                )
+            self._nbound[0] = len(recarray)
 
         for name in recarray.dtype.names:
             if name in self._nodevars:
@@ -130,25 +133,10 @@ class ListInput(object):
 
             if name in self.parent._bound_vars:
                 idx = self.parent._bound_vars.index(name)
-                bname = "bound"  # ? this will probably need to change
-                if resize:
-                    # todo: resize will need to be updated at some point!
-                    dtype = self._ptrs[bname].dtype
-                    x = np.zeros(
-                        (len(recarray), self._ptrs[bname].shape[1]),
-                        dtype=dtype,
-                    )
-                    x[:, idx] = recarray[name]
-
-                    self.mf6.set_value(self._reduced_to_var_addr[bname], x)
-                else:
-                    self._ptrs[bname][:, idx] = recarray[name]
+                bname = "bound"
+                self._ptrs[bname][0 : self._nbound[0], idx] = recarray[name]
             else:
-                if resize:
-                    x = recarray[name].ravel()
-                    self.mf6.set_value(self._reduced_to_var_addr[name], x)
-                else:
-                    self._ptrs[name][:] = recarray[name].ravel()
+                self._ptrs[name][0 : self._nbound[0]] = recarray[name].ravel()
 
     def __getitem__(self, item):
         recarray = self._ptr_to_recarray()
@@ -246,10 +234,12 @@ class ArrayPointer:
         -------
         np.array of modflow data
         """
-
-        value = np.ones((self.parent.model.size,)) * np.nan
-        value[self.parent.model.nodetouser] = self._ptr.ravel()
-        return value.reshape(self.parent.model.shape)
+        if not self.parent._sim_package:
+            value = np.ones((self.parent.model.size,)) * np.nan
+            value[self.parent.model.nodetouser] = self._ptr.ravel()
+            return value.reshape(self.parent.model.shape)
+        else:
+            return np.copy(self._ptr.ravel())
 
     @values.setter
     def values(self, array):
@@ -265,16 +255,19 @@ class ArrayPointer:
 
         if not isinstance(array, np.ndarray):
             raise TypeError()
-        if array.size != self.parent.model.size:
-            raise ValueError(
-                f"{self.name} size {array.size} is not equal to "
-                f"modflow variable size {self.parent.model.size}"
-            )
+        if not self.parent._sim_package:
+            if array.size != self.parent.model.size:
+                raise ValueError(
+                    f"{self.name} size {array.size} is not equal to "
+                    f"modflow variable size {self.parent.model.size}"
+                )
 
-        array = array.ravel()
-        array = array[self.parent.model.nodetouser]
-        if len(self._vshape) > 1:
-            array.shape = self._vshape
+            array = array.ravel()
+            array = array[self.parent.model.nodetouser]
+            if len(self._vshape) > 1:
+                array.shape = self._vshape
+        else:
+            array = array.ravel()
         self._ptr[:] = array
 
 
@@ -489,14 +482,24 @@ class AdvancedInput(object):
         if name.lower() in self._ptrs:
             return self._ptrs[name.lower()]
 
-        if self.parent is not None:
-            var_addr = self.mf6.get_var_address(
-                name.upper(), self.parent.model.name, self.parent.pkg_name
-            )
+        if not self.parent._sim_package:
+            if self.parent is not None:
+                var_addr = self.mf6.get_var_address(
+                    name.upper(), self.parent.model.name, self.parent.pkg_name
+                )
+            else:
+                var_addr = self.mf6.get_var_address(
+                    name.upper(), model.upper(), package.upper()
+                )
         else:
-            var_addr = self.mf6.get_var_address(
-                name.upper(), model.upper(), package.upper()
-            )
+            if self.parent is not None:
+                var_addr = self.mf6.get_var_address(
+                    name.upper(), self.parent.pkg_name
+                )
+            else:
+                var_addr = self.mf6.get_var_address(
+                    name.upper(), package.upper()
+                )
 
         try:
             values = self.mf6.get_value_ptr(var_addr)
@@ -527,7 +530,7 @@ class AdvancedInput(object):
             np.ndarray or scalar float, int, string, or boolean value
             depending on data type and length
         """
-        if model is None:
+        if model is None and not self.parent._sim_package:
             model = self.parent.model.name
         if package is None:
             package = self.parent.pkg_name
@@ -544,3 +547,122 @@ class AdvancedInput(object):
             )
 
         self._ptrs[name.lower()] = values
+
+
+class ScalarInput:
+    """
+    Data object for storing pointers and working with array based input data
+
+    Parameters
+    ----------
+    parent : ArrayPackage
+        modflowapi ArrayPackage object
+    var_addrs : list, None
+        optional list of variable addresses
+    mf6 : ModflowApi, None
+        optional ModflowApi object
+    """
+
+    def __init__(self, parent, var_addrs=None, mf6=None):
+        self._ptrs = {}
+        self.parent = parent
+        # change this to a parent package.mapping
+        self._mapping = None
+
+        if self.parent is not None:
+            self.var_addrs = self.parent.var_addrs
+            self.mf6 = self.parent.model.mf6
+        else:
+            if var_addrs is None or mf6 is None:
+                raise AssertionError(
+                    "var_addrs and mf6 must be supplied if parent is None"
+                )
+            self.var_addrs = var_addrs
+            self.mf6 = mf6
+
+        self._reduced_to_var_addr = {}
+        self._set_scalars()
+
+    def __getattr__(self, item):
+        """
+        Dynamic method to get modflow varaibles as an attribute
+        """
+        if item in self._ptrs:
+            return self._ptrs[item]
+        else:
+            return super(ArrayInput).__getattribute__(item)
+
+    def __setattr__(self, item, value):
+        """
+        Dynamic method that allows users to set modflow variables to the
+        _ptr dict
+        """
+        if item in (
+            "parent",
+            "var_addrs",
+            "_mapping",
+            "_ptrs",
+            "mf6",
+            "_maxbound",
+            "_nbound",
+            "_reduced_to_var_addr",
+        ):
+            super().__setattr__(item, value)
+
+        elif item in self._ptrs:
+            self._ptrs[item] = value
+        else:
+            raise AttributeError(f"{item} is not a vaild attribute")
+
+    @property
+    def variable_names(self):
+        """
+        Returns a list of valid array names that can be accessed by the user
+        """
+        return list(sorted(self._ptrs.keys()))
+
+    def _set_scalars(self):
+        """
+        Method to modflow variable pointers to the _ptrs dictionary
+        """
+        ivn = self.mf6.get_input_var_names()
+        for var_addr in self.var_addrs:
+            if var_addr in ivn:
+                ptr = self.mf6.get_value_ptr(var_addr)
+                reduced = var_addr.split("/")[-1].lower()
+                self._ptrs[reduced] = ptr
+                self._reduced_to_var_addr[reduced] = var_addr
+
+    def get_value(self, item):
+        """
+        Method to get a scalar value from modflow
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name. Ex. "NPER"
+
+        Returns
+        -------
+            str, int, float
+        """
+        if item in self._ptrs:
+            return self._ptrs[item][0]
+        else:
+            raise KeyError(f"{item} is not accessible in this package")
+
+    def set_value(self, item, value):
+        """
+        Method to set a scalar value in modflow
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name. Ex. "NPER"
+
+        value : str, int, float
+        """
+        if item in self._ptrs:
+            self._ptrs[item][0] = value
+        else:
+            raise KeyError(f"{item} is not accessible in this package")

@@ -1,6 +1,6 @@
 import numpy as np
 
-from .data import ListInput, ArrayInput, AdvancedInput
+from .data import ListInput, ArrayInput, AdvancedInput, ScalarInput
 
 
 # Note: HFB variables are not accessible in the memory manager 10/7/2022
@@ -55,6 +55,69 @@ pkgvars = {
         "nodelist",
         ("bound", ("smassrate",)),
     ],
+    # exchange model
+    "gwf-gwf": [
+        "nexg",
+        "nodem1",
+        "nodem2",
+        "cl1",
+        "cl2",
+        "ihc"
+    ],
+    "gwt-gwt": [
+        "nexg",
+        "nodem1",
+        "nodem2",
+        "cl1",
+        "cl2",
+        "ihc"
+    ],
+    # simulation
+    "ats": [
+        "maxats",
+        "iperats",
+        "dt0",
+        "dtmin",
+        "dtmax",
+        "dtadj",
+        "dtfailadj"
+    ],
+    "tdis": [
+        "nper",
+        "itmuni",
+        "kper",
+        "kstp",
+        "delt",
+        "pertim",
+        "totim,"
+        "perlen",
+        "nstp",
+        "tsmult"
+    ],
+    # solution package
+    "sln": [
+        "mxiter",
+        "dvclose",
+        "gamma",
+        "theta",
+        "akappa",
+        "amomentum",
+        "numtrack",
+        "btol",
+        "breduc",
+        "res_lim",
+    ],
+    "ims": [
+        "niterc",
+        "dvclose",
+        "rclose",
+        "relax",
+        "ipc",
+        "droptol",
+        "north",
+        "iscl",
+        "iord",
+    ]
 }
 
 
@@ -73,14 +136,16 @@ class PackageBase:
         modflow package name. ex. 'wel_0'
     child_type : str
         type of child input package
-
+    sim_package : bool
+        flag to indicate this is a simulation level package
     """
 
-    def __init__(self, model, pkg_type, pkg_name, child_type):
+    def __init__(self, model, pkg_type, pkg_name, child_type, sim_package):
         self.model = model
         self.pkg_name = pkg_name
         self.pkg_type = pkg_type
         self._child_type = child_type
+        self._sim_package = sim_package
         self._rhs = None
         self._hcof = None
         self._bound_vars = []
@@ -110,11 +175,18 @@ class PackageBase:
                     self._bound_vars = var[-1]
                     var = var[0]
 
-                var_addrs.append(
-                    self.model.mf6.get_var_address(
-                        var.upper(), self.model.name, self.pkg_name
+                if sim_package:
+                    var_addrs.append(
+                        self.model.mf6.get_var_address(
+                            var.upper(), self.pkg_name
+                        )
                     )
-                )
+                else:
+                    var_addrs.append(
+                        self.model.mf6.get_var_address(
+                            var.upper(), self.model.name, self.pkg_name
+                        )
+                    )
 
         self.var_addrs = var_addrs
         self._variables_adv = AdvancedInput(self)
@@ -128,18 +200,43 @@ class PackageBase:
         if self._advanced_var_names is None:
             adv_vars = []
             for var_addr in self.model.mf6.get_input_var_names():
+                is_advanced = False
                 t = var_addr.split("/")
-                if t[0] == self.model.name and t[1] == self.pkg_name:
-                    if t[-1].lower() in self._bound_vars:
-                        continue
-                    elif self.pkg_type not in pkgvars:
-                        adv_vars.append(t[-1].lower())
-                    elif t[-1].lower() in pkgvars[self.pkg_type]:
-                        continue
-                    else:
-                        adv_vars.append(t[-1].lower())
+                if not self._sim_package:
+                    if t[0] == self.model.name and t[1] == self.pkg_name:
+                        is_advanced = self._check_if_advanced_var(t[-1])
+                else:
+                    if t[0] == self.pkg_name:
+                        is_advanced = self._check_if_advanced_var(t[-1])
+
+                if is_advanced:
+                    adv_vars.append(t[-1].lower())
+
             self._advanced_var_names = adv_vars
         return self._advanced_var_names
+
+    def _check_if_advanced_var(self, variable_name):
+        """
+        Method to check if a variable is an advanced variable
+
+        Parameters
+        ----------
+        variable_name : str
+            variable name to check
+
+        Returns
+        -------
+            bool
+        """
+        if variable_name.lower() in self._bound_vars:
+            is_advanced = False
+        elif self.pkg_type not in pkgvars:
+            is_advanced = True
+        elif variable_name.lower() in pkgvars[self.pkg_type]:
+            is_advanced = False
+        else:
+            is_advanced = True
+        return is_advanced
 
     def get_advanced_var(self, name):
         """
@@ -153,13 +250,14 @@ class PackageBase:
             )
 
         values = self._variables_adv.get_variable(name)
-        if (
-            values.size == self.model.nodetouser.size
-            and self._child_type == "array"
-        ):
-            array = np.full(self.model.size, np.nan)
-            array[self.model.nodetouser] = values
-            return array
+        if not self._sim_package:
+            if (
+                values.size == self.model.nodetouser.size
+                and self._child_type == "array"
+            ):
+                array = np.full(self.model.size, np.nan)
+                array[self.model.nodetouser] = values
+                return array
 
         return values
 
@@ -174,21 +272,23 @@ class PackageBase:
         values : np.ndarray
             numpy array
         """
-        if self._child_type == "array" and values.size == self.model.size:
-            values = values[self.model.nodetouser]
+        if not self._sim_package:
+            if self._child_type == "array" and values.size == self.model.size:
+                values = values[self.model.nodetouser]
 
         self._variables_adv.set_variable(name, values)
 
     @property
     def rhs(self):
-        if self._rhs is None:
-            var_addr = self.model.mf6.get_var_address(
-                "RHS", self.model.name, self.pkg_name
-            )
-            if var_addr in self.model.mf6.get_input_var_names():
-                self._rhs = self.model.mf6.get_value_ptr(var_addr)
-            else:
-                return
+        if not self._sim_package:
+            if self._rhs is None:
+                var_addr = self.model.mf6.get_var_address(
+                    "RHS", self.model.name, self.pkg_name
+                )
+                if var_addr in self.model.mf6.get_input_var_names():
+                    self._rhs = self.model.mf6.get_value_ptr(var_addr)
+                else:
+                    return
 
         return np.copy(self._rhs)
 
@@ -201,14 +301,15 @@ class PackageBase:
 
     @property
     def hcof(self):
-        if self._hcof is None:
-            var_addr = self.model.mf6.get_var_address(
-                "HCOF", self.model.name, self.pkg_name
-            )
-            if var_addr in self.model.mf6.get_input_var_names():
-                self._hcof = self.model.mf6.get_value_ptr(var_addr)
-            else:
-                return
+        if not self._sim_package:
+            if self._hcof is None:
+                var_addr = self.model.mf6.get_var_address(
+                    "HCOF", self.model.name, self.pkg_name
+                )
+                if var_addr in self.model.mf6.get_input_var_names():
+                    self._hcof = self.model.mf6.get_value_ptr(var_addr)
+                else:
+                    return
 
         return np.copy(self._hcof)
 
@@ -232,16 +333,32 @@ class ListPackage(PackageBase):
         package type. Ex. "RCH"
     pkg_name : str
         package name (in the mf6 variables)
+    sim_package : bool
+        flag to indicate this is a simulation level package
     """
 
-    def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper(), "list")
+    def __init__(self, model, pkg_type, pkg_name, sim_package=False):
+        super().__init__(model, pkg_type, pkg_name.upper(), "list", sim_package)
 
         self._variables = ListInput(self)
 
     def __repr__(self):
         s = f"{self.pkg_type.upper()} Package: {self.pkg_name}"
         return s
+
+    @property
+    def nbound(self):
+        """
+        Returns the "nbound" value for the stress period
+        """
+        return self._variables._nbound[0]
+
+    @property
+    def maxbound(self):
+        """
+        Returns the "maxbound" value for the stress period
+        """
+        return self._variables._maxbound[0]
 
     @property
     def stress_period_data(self):
@@ -277,10 +394,12 @@ class ArrayPackage(PackageBase):
         package type. Ex. "DIS"
     pkg_name : str
         package name (in the mf6 variables)
+    sim_package : bool
+        flag to indicate this is a simulation level package
     """
 
-    def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper(), "array")
+    def __init__(self, model, pkg_type, pkg_name, sim_package=False):
+        super().__init__(model, pkg_type, pkg_name.upper(), "array", sim_package)
 
         self._variables = ArrayInput(self)
 
@@ -359,6 +478,102 @@ class ArrayPackage(PackageBase):
         self._variables.set_array(item, array)
 
 
+class ScalarPackage(PackageBase):
+    """
+    Container for advanced data packages
+
+    Parameters
+    ----------
+    model : ApiModel
+        modflowapi model object
+    pkg_type : str
+        package type. Ex. "RCH"
+    pkg_name : str
+        package name (in the mf6 variables)
+    sim_package : bool
+        boolean flag for simulation level packages. Ex. TDIS, IMS
+    """
+
+    def __init__(self, model, pkg_type, pkg_name, sim_package=False):
+        super().__init__(model, pkg_type, pkg_name.upper(), "scalar", sim_package)
+
+        self._variables = ScalarInput(self)
+
+    def __repr__(self):
+        s = f"{self.pkg_type.upper()} Package: {self.pkg_name} \n"
+        s += " Accessible variables include:\n"
+        for var_name in self.variable_names:
+            s += f" {var_name} \n"
+        return s
+
+    def __setattr__(self, item, value):
+        """
+        Method that enables dynamic variable setting and distributes
+        modflow variable storage and updates to the data object class
+        """
+        if item in (
+            "model",
+            "pkg_name",
+            "pkg_type",
+            "var_addrs",
+        ):
+            super().__setattr__(item, value)
+
+        elif item.startswith("_"):
+            super().__setattr__(item, value)
+
+        elif item in self._variables._ptrs:
+            self._variables.set_value(item, value)
+
+        else:
+            raise AttributeError(f"{item}")
+
+    def __getattr__(self, item):
+        """
+        Method to dynamically get modflow variables by attribute
+        """
+        if item in self._variables._ptrs:
+            return self._variables.get_value(item)
+        else:
+            return super().__getattribute__(item)
+
+    @property
+    def variable_names(self):
+        """
+        Returns a list of valid modflow variable names that the user can access
+        """
+        return self._variables.variable_names
+
+    def get_value(self, item):
+        """
+        Method to get a scalar value from modflow
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name. Ex. "NBOUND"
+
+        Returns
+        -------
+        np.array of modflow data
+        """
+        return self._variables.get_value(item)
+
+    def set_value(self, item, value):
+        """
+        Method to update the modflow pointer arrays
+
+        Parameters
+        ----------
+        item : str
+            modflow variable name. Ex. "k11"
+        array : str, int, float
+            scalar value
+
+        """
+        self._variables.set_value(item, value)
+
+
 class AdvancedPackage(PackageBase):
     """
     Container for advanced data packages
@@ -371,13 +586,75 @@ class AdvancedPackage(PackageBase):
         package type. Ex. "RCH"
     pkg_name : str
         package name (in the mf6 variables)
+    sim_package : bool
+        boolean flag for simulation level packages. Ex. TDIS, IMS
     """
 
-    def __init__(self, model, pkg_type, pkg_name):
-        super().__init__(model, pkg_type, pkg_name.upper(), "advanced")
+    def __init__(self, model, pkg_type, pkg_name, sim_package=False):
+        super().__init__(model, pkg_type, pkg_name.upper(), "advanced", sim_package)
 
     def __repr__(self):
         s = f"{self.pkg_type.upper()} Package: {self.pkg_name} \n"
         s += " Advanced Package, variables only accessible through\n"
         s += " get_advanced_var() and set_advanced_var() methods"
         return s
+
+
+class ApiSlnPackage(ScalarPackage):
+    """
+    Class to acess solution packages
+
+    Parameters
+    ----------
+    model : ApiModel
+        modflowapi model object
+    pkg_type : str
+        package type. Ex. "RCH"
+    pkg_name : str
+        package name (in the mf6 variables)
+    sim_package : bool
+        boolean flag for simulation level packages. Ex. TDIS, IMS
+    """
+    def __init__(self, sim, pkg_name):
+        from .apimodel import ApiMbase
+        super().__init__(sim, "sln", pkg_name, sim_package=True)
+
+        mdl = ApiMbase(
+            sim.mf6, pkg_name.upper(), pkg_types={"ims": ScalarPackage}
+        )
+        imslin = ScalarPackage(mdl, "ims", "IMSLINEAR")
+        for key, ptr in imslin._variables._ptrs.items():
+            if key in self._variables._ptrs:
+                key = f"{imslin.pkg_type}_{key}".lower()
+            self._variables._ptrs[key] = ptr
+
+
+def package_factory(pkg_type, basepackage):
+    """
+    Method to autogenerate unique package "types" from the base packages:
+    ArrayPackage, ListPackage, and AdvancedPackage
+
+    Parameters
+    ----------
+    pkg_type : str
+        package type
+    basepackage : ArrayPackage, ListPackage, or AdvancedPackage
+        a base package type
+
+    Returns
+        Package object : ex. ApiWelPackage
+    """
+    # hack for now. need a pkg_type variable for robustness
+    def __init__(self, obj, model, pkg_type, pkg_name, sim_package=False):
+        obj.__init__(self, model, pkg_type, pkg_name, sim_package=sim_package)
+
+    cls_str = "".join(pkg_type.split("-"))
+    cls_str = f"{cls_str[0].upper()}{cls_str[1:]}"
+
+    package = type(
+        f"Api{cls_str}Package",
+        (basepackage,),
+        {"__init__": __init__},
+    )
+
+    return package
