@@ -146,7 +146,7 @@ jobs:
         shell: bash -l {0}
         run: |
           # chmod a+x libmf6*
-          pytest -n auto -m "extensions and not mf6"
+          pytest -n auto -m "not mf6"
           
   autotest_mf6_examples:
     name: modflowapi mf6 examples autotests
