@@ -6,16 +6,58 @@ from .data import ListInput, ArrayInput, AdvancedInput, ScalarInput
 # Note: HFB variables are not accessible in the memory manager 10/7/2022
 pkgvars = {
     "dis": ["top", "bot", "area", "idomain"],
-    "chd": ["nbound", "maxbound", "nodelist", ("bound", ("head",))],
-    "drn": ["nbound", "maxbound", "nodelist", ("bound", ("elev", "cond"))],
+    "chd": [
+        "nbound",
+        "maxbound",
+        "nodelist",
+        ("bound", ("head",)),
+        "naux",
+        "auxvar",
+    ],
+    "drn": [
+        "nbound",
+        "maxbound",
+        "nodelist",
+        (
+            "bound",
+            (
+                "elev",
+                "cond",
+            ),
+        ),
+        "naux",
+        "auxvar",
+    ],
     "evt": [
         "nbound",
         "maxbound",
         "nodelist",
-        ("bound", ("surface", "rate", "depth"))
+        (
+            "bound",
+            (
+                "surface",
+                "rate",
+                "depth",
+            ),
+        ),
         # "pxdp:NSEG", "petm:NSEG"
+        "naux",
+        "auxvar",
     ],
-    "ghb": ["nbound", "maxbound", "nodelist", ("bound", ("bhead", "cond"))],
+    "ghb": [
+        "nbound",
+        "maxbound",
+        "nodelist",
+        (
+            "bound",
+            (
+                "bhead",
+                "cond",
+            ),
+        ),
+        "naux",
+        "auxvar",
+    ],
     "ic": ["strt"],
     "npf": ["k11", "k22", "k33", "angle1", "angle2", "angle3", "icelltype"],
     "rch": [
@@ -23,6 +65,8 @@ pkgvars = {
         "nbound",
         "nodelist",
         ("bound", ("recharge",)),
+        "naux",
+        "auxvar",
     ],
     "sto": ["iconvert", "ss", "sy"],
     "wel": [
@@ -30,6 +74,8 @@ pkgvars = {
         "nbound",
         "nodelist",
         ("bound", ("flux",)),
+        "naux",
+        "auxvar",
     ],
     # gwt model
     "adv": ["diffc", "alh", "alv", "ath1", "ath2", "atv"],
@@ -38,6 +84,8 @@ pkgvars = {
         "nbound",
         "nodelist",
         ("bound", ("conc",)),
+        "naux",
+        "auxvar",
     ],
     "ist": [
         "cim",
@@ -54,6 +102,8 @@ pkgvars = {
         "nbound",
         "nodelist",
         ("bound", ("smassrate",)),
+        "naux",
+        "auxvar",
     ],
     # exchange model
     "gwf-gwf": ["nexg", "nodem1", "nodem2", "cl1", "cl2", "ihc"],

@@ -33,10 +33,14 @@ class ListInput(object):
         self._ptrs = {}
         self._nodevars = ("nodelist", "nexg", "maxats")
         self._boundvars = ("bound",)
+        self._auxname = []
         self._maxbound = [
             0,
         ]
         self._nbound = [
+            0,
+        ]
+        self._naux = [
             0,
         ]
         self._dtype = []
@@ -49,6 +53,7 @@ class ListInput(object):
         dictionary
 
         """
+        avr = self.mf6.get_input_var_names()
         for var_addr in self.var_addrs:
             values = self.mf6.get_value_ptr(var_addr)
             reduced = var_addr.split("/")[-1].lower()
@@ -57,6 +62,8 @@ class ListInput(object):
             elif reduced in ("nexg", "maxats"):
                 setattr(self, "_maxbound", values)
                 setattr(self, "_nbound", values)
+            elif reduced in ("naux",):
+                setattr(self, "_naux", values)
             else:
                 self._ptrs[reduced] = values
                 self._reduced_to_var_addr[reduced] = var_addr
@@ -68,6 +75,14 @@ class ListInput(object):
                 elif reduced in self._nodevars:
                     dtype = (reduced, "O")
                     self._dtype.append(dtype)
+                elif reduced == "auxvar":
+                    if self._naux == 0:
+                        continue
+                    else:
+                        for ix in range(self._naux[0]):
+                            typ_str = values.dtype.str
+                            dtype = (f"aux_{ix}", typ_str)
+                            self._dtype.append(dtype)
                 else:
                     typ_str = values.dtype.str
                     dtype = (reduced, typ_str)
@@ -91,7 +106,18 @@ class ListInput(object):
                     recarray[nm][0 : self._nbound[0]] = values[
                         0 : self._nbound[0], ix
                     ]
+            elif name == "auxvar":
+                if self._naux[0] == 0:
+                    continue
+                else:
+                    for ix in range(self._naux[0]):
+                        nm = f"aux_{ix}"
+                        recarray[nm][0 : self._nbound[0]] = values[
+                            0 : self._nbound[0], ix
+                        ]
+
             else:
+
                 values = values.ravel()
                 if name in self._nodevars:
                     values -= 1
@@ -139,6 +165,9 @@ class ListInput(object):
                 idx = self.parent._bound_vars.index(name)
                 bname = "bound"
                 self._ptrs[bname][0 : self._nbound[0], idx] = recarray[name]
+            elif name.startswith("aux_"):
+                idx = int(name.split("_")[-1])
+                self._ptrs["auxvar"][0 : self._nbound[0], idx] = recarray[name]
             else:
                 self._ptrs[name][0 : self._nbound[0]] = recarray[name].ravel()
 

@@ -93,7 +93,7 @@ def test_dis_model(tmpdir):
                 spd = sim.test_model.wel.stress_period_data.values
                 nbound0 = sim.test_model.wel.nbound
                 spd.resize((nbound0 + 1), refcheck=False)
-                spd[-1] = ((0, 1, 5), -20)
+                spd[-1] = ((0, 1, 5), -20, 1.0, 2.0)
                 sim.test_model.wel.stress_period_data.values = spd
                 if sim.test_model.wel.nbound != nbound0 + 1:
                     raise AssertionError("Resize routine not properly working")
