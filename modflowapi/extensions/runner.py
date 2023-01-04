@@ -13,6 +13,7 @@ class Callbacks(Enum):
     timestep_end = 4
     iteration_start = 5
     iteration_end = 6
+    finalize = 7
 
 
 def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
@@ -141,8 +142,9 @@ def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
             callback(sim_grp, Callbacks.stress_period_end)
 
     try:
+        callback(sim, Callbacks.finalize)
         mf6.finalize()
     except Exception:
         raise RuntimeError("MF6 simulation failed, check listing file")
 
-    print("SUCCESSFUL TERMINATION OF THE SIMULATION")
+    print("NORMAL TERMINATION OF SIMULATION")

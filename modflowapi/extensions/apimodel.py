@@ -244,22 +244,42 @@ class ApiModel(ApiMbase):
 
     @property
     def kper(self):
+        """
+        Returns the current stress period
+        """
         var_addr = self.mf6.get_var_address("KPER", "TDIS")
         return self.mf6.get_value(var_addr)[0] - 1
 
     @property
     def kstp(self):
+        """
+        Returns the current timestep
+        """
         var_addr = self.mf6.get_var_address("KSTP", "TDIS")
         return self.mf6.get_value(var_addr)[0] - 1
 
     @property
     def nstp(self):
+        """
+        Returns the number of timesteps in the current stress period
+        """
         var_addr = self.mf6.get_var_address("NSTP", "TDIS")
         return self.mf6.get_value(var_addr)[0]
 
     @property
     def nper(self):
+        """
+        Returns the number of stress periods
+        """
         var_addr = self.mf6.get_var_address("NPER", "TDIS")
+        return self.mf6.get_value(var_addr)[0]
+
+    @property
+    def totim(self):
+        """
+        Returns the current model time
+        """
+        var_addr = self.mf6.get_var_address("TOTIM", "TDIS")
         return self.mf6.get_value(var_addr)[0]
 
     @property

@@ -196,6 +196,13 @@ class ApiSimulation:
         return self.tdis.nper
 
     @property
+    def totim(self):
+        """
+        Returns the current model time
+        """
+        return self.tdis.totim
+
+    @property
     def delt(self):
         """
         Returns the timestep length for the current time step
