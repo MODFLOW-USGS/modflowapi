@@ -413,6 +413,8 @@ class ListPackage(PackageBase):
             self._variables.values = recarray
         elif isinstance(recarray, ListInput):
             self._variables.values = recarray.values
+        elif recarray is None:
+            self._variables.values = recarray
         else:
             raise TypeError(
                 f"{type(recarray)} is not a supported stress_period_data type"

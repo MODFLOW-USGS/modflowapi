@@ -143,6 +143,10 @@ class ListInput(object):
             numpy recarray of stress period data
 
         """
+        if recarray is None:
+            self._nbound[0] = 0
+            return
+
         if len(recarray) != self._nbound:
             if len(recarray) > self._maxbound[0]:
                 raise AssertionError(
@@ -150,6 +154,9 @@ class ListInput(object):
                     f"than maxbound value ({self._maxbound[0]},)"
                 )
             self._nbound[0] = len(recarray)
+
+            if len(recarray) == 0:
+                return
 
         for name in recarray.dtype.names:
             if name in self._nodevars:
