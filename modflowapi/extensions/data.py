@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from xmipy.errors import InputError
+import xmipy.errors
 
 
 class ListInput(object):
@@ -33,7 +33,7 @@ class ListInput(object):
         self._ptrs = {}
         self._nodevars = ("nodelist", "nexg", "maxats")
         self._boundvars = ("bound",)
-        self._auxname = []
+        # self._auxname = []
         self._maxbound = [
             0,
         ]
@@ -43,6 +43,7 @@ class ListInput(object):
         self._naux = [
             0,
         ]
+        self._auxnames = []
         self._dtype = []
         self._reduced_to_var_addr = {}
         self._set_stress_period_data()
@@ -53,9 +54,14 @@ class ListInput(object):
         dictionary
 
         """
-        avr = self.mf6.get_input_var_names()
         for var_addr in self.var_addrs:
-            values = self.mf6.get_value_ptr(var_addr)
+            try:
+                values = self.mf6.get_value_ptr(var_addr)
+            except xmipy.errors.InputError:
+                if self._naux[0] > 0:
+                    values = self.mf6.get_value(var_addr)
+                else:
+                    continue
             reduced = var_addr.split("/")[-1].lower()
             if reduced in ("maxbound", "nbound"):
                 setattr(self, f"_{reduced}", values)
@@ -64,6 +70,8 @@ class ListInput(object):
                 setattr(self, "_nbound", values)
             elif reduced in ("naux",):
                 setattr(self, "_naux", values)
+            elif reduced in ("auxname_cst"):
+                setattr(self, "_auxnames", list(values))
             else:
                 self._ptrs[reduced] = values
                 self._reduced_to_var_addr[reduced] = var_addr
@@ -81,7 +89,7 @@ class ListInput(object):
                     else:
                         for ix in range(self._naux[0]):
                             typ_str = values.dtype.str
-                            dtype = (f"aux_{ix}", typ_str)
+                            dtype = (self._auxnames[ix], typ_str)
                             self._dtype.append(dtype)
                 else:
                     typ_str = values.dtype.str
@@ -111,13 +119,14 @@ class ListInput(object):
                     continue
                 else:
                     for ix in range(self._naux[0]):
-                        nm = f"aux_{ix}"
+                        nm = self._auxnames[ix]
                         recarray[nm][0 : self._nbound[0]] = values[
                             0 : self._nbound[0], ix
                         ]
+            elif name == "auxname_cst":
+                pass
 
             else:
-
                 values = values.ravel()
                 if name in self._nodevars:
                     values -= 1
@@ -172,9 +181,11 @@ class ListInput(object):
                 idx = self.parent._bound_vars.index(name)
                 bname = "bound"
                 self._ptrs[bname][0 : self._nbound[0], idx] = recarray[name]
-            elif name.startswith("aux_"):
-                idx = int(name.split("_")[-1])
+            elif name in self._auxnames:
+                idx = self._auxnames.index(name)
                 self._ptrs["auxvar"][0 : self._nbound[0], idx] = recarray[name]
+            elif name == "auxname_cst":
+                pass
             else:
                 self._ptrs[name][0 : self._nbound[0]] = recarray[name].ravel()
 

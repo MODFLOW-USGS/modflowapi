@@ -220,10 +220,12 @@ class ApiSimulation:
             model name (ex. "GWF_1") or subcomponent id (ex. 1)
         """
         if model_id is None:
-            model_id = min([model.subcomponent_id for model in self._models])
+            model_id = int(
+                min([model.subcomponent_id for model in self.models])
+            )
 
         if isinstance(model_id, int):
-            for model in self._models:
+            for model in self.models:
                 if model_id == model.subcomponent_id:
                     return model
             raise KeyError(f"No model found with subcomponent id {model_id}")

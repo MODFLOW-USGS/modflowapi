@@ -12,6 +12,7 @@ pkgvars = {
         "nodelist",
         ("bound", ("head",)),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "drn": [
@@ -26,6 +27,7 @@ pkgvars = {
             ),
         ),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "evt": [
@@ -42,6 +44,7 @@ pkgvars = {
         ),
         # "pxdp:NSEG", "petm:NSEG"
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "ghb": [
@@ -56,6 +59,7 @@ pkgvars = {
             ),
         ),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "ic": ["strt"],
@@ -66,6 +70,7 @@ pkgvars = {
         "nodelist",
         ("bound", ("recharge",)),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "sto": ["iconvert", "ss", "sy"],
@@ -75,6 +80,7 @@ pkgvars = {
         "nodelist",
         ("bound", ("flux",)),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     # gwt model
@@ -85,6 +91,7 @@ pkgvars = {
         "nodelist",
         ("bound", ("conc",)),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     "ist": [
@@ -103,6 +110,7 @@ pkgvars = {
         "nodelist",
         ("bound", ("smassrate",)),
         "naux",
+        "auxname_cst",
         "auxvar",
     ],
     # exchange model
