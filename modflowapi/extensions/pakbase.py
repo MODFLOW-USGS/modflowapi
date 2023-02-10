@@ -1,7 +1,6 @@
 import numpy as np
 
-from .data import ListInput, ArrayInput, AdvancedInput, ScalarInput
-
+from .data import AdvancedInput, ArrayInput, ListInput, ScalarInput
 
 # Note: HFB variables are not accessible in the memory manager 10/7/2022
 pkgvars = {

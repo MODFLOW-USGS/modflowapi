@@ -1,7 +1,8 @@
-from .apimodel import ApiModel, ApiMbase
-from .apiexchange import ApiExchange
-from .pakbase import ScalarPackage, ListPackage, ApiSlnPackage, package_factory
 import numpy as np
+
+from .apiexchange import ApiExchange
+from .apimodel import ApiMbase, ApiModel
+from .pakbase import ApiSlnPackage, ListPackage, ScalarPackage, package_factory
 
 
 class ApiSimulation:
