@@ -700,6 +700,7 @@ def package_factory(pkg_type, basepackage):
     Returns
         Package object : ex. ApiWelPackage
     """
+
     # hack for now. need a pkg_type variable for robustness
     def __init__(self, obj, model, pkg_type, pkg_name, sim_package=False):
         obj.__init__(self, model, pkg_type, pkg_name, sim_package=sim_package)

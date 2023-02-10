@@ -134,7 +134,6 @@ class ApiModel(ApiMbase):
     """
 
     def __init__(self, mf6, name):
-
         _id_addr = mf6.get_var_address("ID", name)
         self._id = mf6.get_value(_id_addr)[0]
         if self._id < 1:
