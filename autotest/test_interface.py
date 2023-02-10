@@ -30,10 +30,10 @@ def test_dis_model(tmpdir):
                 raise AssertionError("Invalid number of models")
 
             model = sim.test_model
-            if len(model.package_names) != 17:
+            if len(model.package_names) != 16:
                 raise AssertionError("Invalid number of packages")
 
-            if len(model.package_types) != 16:
+            if len(model.package_types) != 15:
                 raise AssertionError("Invalid number of package types")
 
             if model.shape != (1, 10, 10):

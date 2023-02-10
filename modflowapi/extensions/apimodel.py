@@ -355,7 +355,10 @@ class ApiModel(ApiMbase):
         Returns the solution array. Ex. GFW models return heads, GWT
         returns a concentration array, etc...
         """
-        return self.mf6.get_value(self.mf6.get_var_address("X", self.name))
+        x = self.mf6.get_value(self.mf6.get_var_address("X", self.name))
+        array = np.full(self.size, np.nan)
+        array[self.nodetouser] = x
+        return array.reshape(self.shape)
 
     def _set_node_mapping(self):
         """

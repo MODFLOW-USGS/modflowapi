@@ -287,6 +287,7 @@ class PackageBase:
         Method to get an advanced variable that is not automatically
         accessible through stress period data or as an array name
         """
+        name = name.lower()
         if name not in self.advanced_vars:
             raise AssertionError(
                 f"{name} is not accessible as an advanced "

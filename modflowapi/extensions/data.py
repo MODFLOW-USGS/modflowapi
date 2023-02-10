@@ -287,7 +287,10 @@ class ArrayPointer:
         """
         if not self.parent._sim_package:
             value = np.ones((self.parent.model.size,)) * np.nan
-            value[self.parent.model.nodetouser] = self._ptr.ravel()
+            if self._ptr.size == self.parent.model.size:
+                value[:] = self._ptr.ravel()
+            else:
+                value[self.parent.model.nodetouser] = self._ptr.ravel()
             return value.reshape(self.parent.model.shape)
         else:
             return np.copy(self._ptr.ravel())
@@ -314,7 +317,8 @@ class ArrayPointer:
                 )
 
             array = array.ravel()
-            array = array[self.parent.model.nodetouser]
+            if self._ptr.size != array.size:
+                array = array[self.parent.model.nodetouser]
             if len(self._vshape) > 1:
                 array.shape = self._vshape
         else:

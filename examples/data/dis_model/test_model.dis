@@ -18,5 +18,17 @@ BEGIN griddata
     CONSTANT     100.00000000
   botm
     CONSTANT       0.00000000
+  IDOMAIN
+    INTERNAL FACTOR 1
+    0 0 1 1 1 1 1 1 0 0
+    0 1 1 1 1 1 1 1 1 0
+    1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1
+    0 1 1 1 1 1 1 1 1 0
+    0 0 1 1 1 1 1 1 0 0
 END griddata
 

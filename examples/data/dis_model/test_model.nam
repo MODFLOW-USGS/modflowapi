@@ -16,7 +16,6 @@ BEGIN packages
   RCH6  test_model.rch  rch_0
   RCH6  test_model.rcha  rcha_0
   CHD6  test_model.chd  chd_0
-  GHB6  test_model.ghb  ghb_0
   EVT6  test_model.evt  evt_0
   OC6  test_model.oc  oc
 END packages
