@@ -7,5 +7,6 @@ coverage
 requests
 appdirs
 numpy
+pandas
 bmipy
 xmipy

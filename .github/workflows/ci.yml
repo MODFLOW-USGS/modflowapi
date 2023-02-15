@@ -26,10 +26,10 @@ jobs:
 
     # check out repo
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3
 
     - name: Setup Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
 
@@ -39,15 +39,15 @@ jobs:
 
     - name: Base installation
       run: |
-        pip install . --use-feature=in-tree-build
-
+        pip install -e .
+        
     - name: Print version
       run: |
         python -c "import modflowapi; print(modflowapi.__version__)"
 
 
   lint:
-    name: linting
+    name: lint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -59,24 +59,27 @@ jobs:
     steps:
     # check out repo
     - name: Checkout repo
-      uses: actions/checkout@v2.3.4
+      uses: actions/checkout@v3
 
-    # Standard python fails on windows without GDAL installation. Using
+    # Standard python fails on Windows without GDAL installation. Using
     # standard python here since only linting on linux.
     # Use standard bash shell with standard python
     - name: Setup Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
+        cache: 'pip'
+        cache-dependency-path: setup.cfg
 
     - name: Print python version
       run: |
         python --version
 
-    - name: Install Python 3.8 packages
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r etc/requirements.pip.txt
+        pip install .
+        pip install ".[lint]"
 
     - name: Run black
       run: |
@@ -93,3 +96,106 @@ jobs:
       run: |
         pylint --jobs=2 --errors-only --exit-zero ./modflowapi
 
+  autotest_extensions:
+    name: modflowapi extensions autotests
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ 3.8, 3.9, "3.10"]
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # check out repo
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: setup.cfg
+
+      - name: Install Python dependencies
+        if: runner.os != 'Windows'
+        run: |
+          pip install --upgrade pip
+          pip install .
+          pip install ".[test]"
+
+      - name: Install Python dependencies Windows
+        if: runner.os == 'Windows'
+        run: |
+          python.exe -m pip install --upgrade pip
+          python.exe -m pip install .
+          python.exe -m pip install ".[test]"
+
+      - name: Install modflow executables
+        uses: modflowpy/install-modflow-action@v1
+        with:
+          path: ~/work/modflowapi/modflowapi/autotest
+          repo: modflow6-nightly-build
+
+      - name: Run autotests
+        working-directory: ./autotest
+        shell: bash -l {0}
+        run: |
+          # chmod a+x libmf6*
+          pytest -n auto -m "not mf6"
+          
+  autotest_mf6_examples:
+    name: modflowapi mf6 examples autotests
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ 3.8, 3.9, "3.10"]
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # check out repo
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: setup.cfg
+
+      - name: Install Python dependencies
+        if: runner.os != 'Windows'
+        run: |
+          pip install --upgrade pip
+          pip install .
+          pip install ".[test]"
+
+      - name: Install Python dependencies Windows
+        if: runner.os == 'Windows'
+        run: |
+          python.exe -m pip install --upgrade pip
+          python.exe -m pip install .
+          python.exe -m pip install ".[test]"
+
+      - name: Install modflow executables
+        uses: modflowpy/install-modflow-action@v1
+        with:
+          path: ~/work/modflowapi/modflowapi/autotest
+          repo: modflow6-nightly-build
+
+      - name: Run autotests
+        working-directory: ./autotest
+        shell: bash -l {0}
+        run: |
+          # chmod a+x libmf6*
+          pytest -n auto -m "mf6 and not extensions"

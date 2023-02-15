@@ -1,4 +1,6 @@
 # imports
+from .version import __version__
 from modflowapi.modflowapi import ModflowApi
 
-__version__ = "0.0.1"
+from . import extensions
+from .extensions.runner import Callbacks, run_simulation
