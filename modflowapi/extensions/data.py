@@ -558,7 +558,7 @@ class AdvancedInput(object):
 
         try:
             values = self.mf6.get_value_ptr(var_addr)
-        except InputError:
+        except xmipy.errors.InputError:
             values = self.mf6.get_value(var_addr)
 
         self._ptrs[name.lower()] = values
