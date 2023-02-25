@@ -605,11 +605,9 @@ class AdvancedInput(object):
             # this is a set value situation
             self.mf6.set_value(
                 self.mf6.get_var_address(
-                    name.upper(),
-                    self.parent.model.name,
-                    self.parent.pkg_name
+                    name.upper(), self.parent.model.name, self.parent.pkg_name
                 ),
-                values
+                values,
             )
         else:
             self._ptrs[name.lower()] = values
