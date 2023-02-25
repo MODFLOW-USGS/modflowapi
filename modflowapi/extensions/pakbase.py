@@ -341,7 +341,7 @@ class PackageBase:
         if self._rhs is None:
             return
 
-        self._rhs = values
+        self._rhs[:] = values[:]
 
     @property
     def hcof(self):
@@ -362,7 +362,7 @@ class PackageBase:
         if self._hcof is None:
             return
 
-        self.__hcof = values
+        self._hcof[:] = values[:]
 
 
 class ListPackage(PackageBase):
