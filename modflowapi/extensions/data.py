@@ -610,7 +610,7 @@ class AdvancedInput(object):
                 values,
             )
         else:
-            self._ptrs[name.lower()] = values
+            self._ptrs[name.lower()][:] = values[:]
 
 
 class ScalarInput:
