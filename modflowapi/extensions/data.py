@@ -558,10 +558,10 @@ class AdvancedInput(object):
 
         try:
             values = self.mf6.get_value_ptr(var_addr)
+            self._ptrs[name.lower()] = values
         except xmipy.errors.InputError:
             values = self.mf6.get_value(var_addr)
 
-        self._ptrs[name.lower()] = values
         return values.copy()
 
     def set_variable(self, name, values, model=None, package=None):
@@ -601,7 +601,16 @@ class AdvancedInput(object):
                 f"current shape={values.shape}, valid shape={values0.shape}"
             )
 
-        self._ptrs[name.lower()] = values
+        if name.lower() not in self._ptrs:
+            # this is a set value situation
+            self.mf6.set_value(
+                self.mf6.get_var_address(
+                    name.upper(), self.parent.model.name, self.parent.pkg_name
+                ),
+                values,
+            )
+        else:
+            self._ptrs[name.lower()][:] = values[:]
 
 
 class ScalarInput:
