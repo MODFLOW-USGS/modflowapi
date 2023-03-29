@@ -336,9 +336,9 @@ def test_rhs_hcof_advanced(tmpdir):
             wel.rhs = rhs
 
             rhs2 = wel.get_advanced_var("rhs")
-            if not np.allclose(rhs, rhs2):
-                raise AssertionError("rhs variable not being properly set")
-
+            np.testing.assert_allclose(
+                rhs, rhs2, err_msg="rhs variable not being properly set"
+            )
 
             hcof = wel.hcof
             hcof[0: 3] = np.abs(rhs)[0:3] / 2
@@ -347,15 +347,19 @@ def test_rhs_hcof_advanced(tmpdir):
 
             hcof2 = wel.get_advanced_var("hcof")
 
-            if not np.allclose(hcof, hcof2):
-                raise AssertionError("hcof is not being properly set")
+            np.testing.assert_allclose(
+                hcof, hcof2, err_msg="hcof is not being properly set"
+            )
 
             rhs *= 1.2
             wel.set_advanced_var('rhs', rhs)
             rhs3 = wel.rhs
 
-            if not np.allclose(rhs, rhs3):
-                raise("set advanced var method not working properly")
+            np.testing.assert_allclose(
+                rhs,
+                rhs3,
+                err_msg="set advanced var method not working properly"
+            )
 
     name = "dis_model"
     sim_pth = data_pth / name
