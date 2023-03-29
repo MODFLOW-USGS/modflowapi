@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: If you use this software, please cite both the article from preferred-citation
+  and the software itself.
+type: software
+title: MODFLOW API
+version: 0.0.1
+date-released: '2021-05-12'
+abstract: An extension to xmipy for the MODFLOW API.
+repository-artifact: https://pypi.org/project/modflowapi
+repository-code: https://github.com/MODFLOW-USGS/modflowapi
+license: CC0-1.0
+authors:
+- family-names: Hughes
+  given-names: Joseph D.
+  alias: jdhughes-usgs
+  affiliation: U.S. Geological Survey
+  orcid: https://orcid.org/0000-0003-1311-2354
+- family-names: Russcher
+  given-names: Martijn
+  alias: mjr-deltares
+  affiliation: Deltares
+  orcid: https://orcid.org/0000-0001-8799-6514
+- family-names: Langevin
+  given-names: Christian D.
+  alias: langevin-usgs
+  affiliation: U.S. Geological Survey
+  orcid: https://orcid.org/0000-0001-5610-9759
+- family-names: Hofer
+  given-names: Julian
+  alias: Hofer-Julian
+  affiliation: Deltares
+- family-names: Larsen
+  given-names: Joshua D.
+  alias: jlarsen-usgs
+  affiliation: U.S. Geological Survey
+  orcid: https://orcid.org/0000-0002-1218-800X
+preferred-citation:
+  type: article
+  authors:
+  - family-names: Hughes
+    given-names: Joseph D.
+    orcid: https://orcid.org/0000-0003-1311-2354
+  - family-names: Russcher
+    given-names: Martijn J.
+    orcid: https://orcid.org/0000-0001-8799-6514
+  - family-names: Langevin
+    given-names: Christian D.
+    orcid: https://orcid.org/0000-0001-5610-9759
+  - family-names: Morway
+    given-names: Eric D.
+    orcid: https://orcid.org/0000-0002-8553-6140
+  - family-names: McDonald
+    given-names: Richard R.
+    orcid: https://orcid.org/0000-0002-0703-0638
+  title: The MODFLOW Application Programming Interface for simulation control and software interoperability
+  doi: 10.1016/j.envsoft.2021.105257
+  journal: Environmental Modelling & Software
+  volume: 138
+  start: 105257
+  year: 2022
+  month: 2
