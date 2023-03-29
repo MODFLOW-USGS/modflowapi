@@ -323,3 +323,50 @@ def test_ats_model(tmpdir):
             run_simulation(so, test_pth, callback)
         except Exception as e:
             raise Exception(e)
+
+
+def test_rhs_hcof_advanced(tmpdir):
+    def callback(sim, step):
+        model = sim.test_model
+        if step == Callbacks.timestep_start:
+
+            wel = model.wel
+            rhs = wel.rhs
+            rhs[0:3] = [-150, -100, -50]
+            wel.rhs = rhs
+
+            rhs2 = wel.get_advanced_var("rhs")
+            np.testing.assert_allclose(
+                rhs, rhs2, err_msg="rhs variable not being properly set"
+            )
+
+            hcof = wel.hcof
+            hcof[0: 3] = np.abs(rhs)[0:3] / 2
+
+            wel.hcof = hcof
+
+            hcof2 = wel.get_advanced_var("hcof")
+
+            np.testing.assert_allclose(
+                hcof, hcof2, err_msg="hcof is not being properly set"
+            )
+
+            rhs *= 1.2
+            wel.set_advanced_var('rhs', rhs)
+            rhs3 = wel.rhs
+
+            np.testing.assert_allclose(
+                rhs,
+                rhs3,
+                err_msg="set advanced var method not working properly"
+            )
+
+    name = "dis_model"
+    sim_pth = data_pth / name
+    test_pth = tmpdir / name
+    shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
+
+    try:
+        run_simulation(so, test_pth, callback)
+    except Exception as e:
+        raise Exception(e)
