@@ -3,7 +3,7 @@ message: If you use this software, please cite both the article from preferred-c
   and the software itself.
 type: software
 title: MODFLOW API
-version: 0.1.0
+version: 0.2.0
 date-released: '2023-04-19'
 abstract: An extension to xmipy for the MODFLOW API.
 repository-artifact: https://pypi.org/project/modflowapi
