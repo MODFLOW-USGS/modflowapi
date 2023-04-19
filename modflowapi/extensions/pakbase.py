@@ -72,6 +72,15 @@ pkgvars = {
         "auxname_cst",
         "auxvar",
     ],
+    "riv": [
+        "maxbound",
+        "nbound",
+        "nodelist",
+        ("bound", ("stage", "cond", "rbot")),
+        "naux",
+        "auxname_cst",
+        "auxvar"
+    ],
     "sto": ["iconvert", "ss", "sy"],
     "wel": [
         "maxbound",
