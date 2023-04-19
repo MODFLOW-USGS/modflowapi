@@ -9,7 +9,7 @@ on:
       - develop
       - 'release*'
   pull_request:
-    branches: [master, develop]
+    branches: [main, develop]
 
 jobs:
 
