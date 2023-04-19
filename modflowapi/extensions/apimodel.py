@@ -161,6 +161,7 @@ class ApiModel(ApiMbase):
             "ic": ArrayPackage,
             "npf": ArrayPackage,
             "rch": ListPackage,
+            "riv": ListPackage,
             "sto": ArrayPackage,
             "wel": ListPackage,
             # gwt
