@@ -79,7 +79,7 @@ pkgvars = {
         ("bound", ("stage", "cond", "rbot")),
         "naux",
         "auxname_cst",
-        "auxvar"
+        "auxvar",
     ],
     "sto": ["iconvert", "ss", "sy"],
     "wel": [
