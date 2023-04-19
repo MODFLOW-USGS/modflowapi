@@ -1,4 +1,4 @@
 from setuptools import setup
 
-
-setup()
+# see pyproject.toml for project metadata
+setup(name="modflowapi")

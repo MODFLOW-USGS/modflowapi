@@ -2,15 +2,15 @@
 
 1) If present delete dist folder
 
-2) If not done yet, install twine via
+2) If not done yet, install build and twine via
 ```
-pip install twine
+pip install build twine
 ```
-3) Update the version number in the setup.py file.
+3) Update the version in ``modflowapi/version.py``
 
 4) Re-create the wheels:
 ```
-python setup.py sdist bdist_wheel
+python -m build
 ```
 5) Re-upload the new files:
 ```

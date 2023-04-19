@@ -9,3 +9,7 @@ and additional functionality specific to the MODFLOW API. Currently it is a join
 ```
 pip install modflowapi
 ```
+
+### Citation
+
+Hughes, Joseph D., Russcher, M. J., Langevin, C. D., Morway, E. D. and McDonald, R. R., 2022, The MODFLOW Application Programming Interface for simulationcontrol and software interoperability: Environmental Modelling & Software, v. 148, p. 105257, [doi:10.1016/j.envsoft.2021.105257](https://doi.org/10.1016/j.envsoft.2021.105257).
