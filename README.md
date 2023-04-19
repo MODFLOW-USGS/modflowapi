@@ -5,7 +5,7 @@
 The `modflowapi` can be used to access functionality in the eXtended Model Interface (XMI) wrapper (XmiWrapper) 
 and additional functionality specific to the MODFLOW API. Currently it is a joint development of the USGS and Deltares.
 
-Use of modflowapi and modflowapi extensions can be found in the [Quickstart](https://github.com/MODFLOW-USGS/modflowapi/blob/develop/examples/notebooks/Quickstart.ipynb) and the [Extensions](https://github.com/MODFLOW-USGS/modflowapi/blob/develop/examples/notebooks/MODFLOW-API_extensions_objects.ipynb) Notebooks. An example of using the MODFLOW API to monitor heads during a simulation can be found in the [Head Monitor Example](https://github.com/MODFLOW-USGS/modflowapi/blob/develop/examples/notebooks/Head_Monitor_Example.ipynb) Notebook. 
+Use of modflowapi and modflowapi extensions can be found in the [Quickstart](examples/notebooks/Quickstart.ipynb) and the [Extensions](examples/notebooks/MODFLOW-API_extensions_objects.ipynb) Notebooks. An example of using the MODFLOW API to monitor heads during a simulation can be found in the [Head Monitor Example](examples/notebooks/Head_Monitor_Example.ipynb) Notebook. 
 
 
 `modflowapi` can be installed by running
