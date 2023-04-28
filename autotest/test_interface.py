@@ -361,6 +361,20 @@ def test_rhs_hcof_advanced(tmpdir):
                 err_msg="set advanced var method not working properly"
             )
 
+            npf = model.npf
+
+            try:
+                npf.hcof = [1, 2, 3]
+                raise AssertionError("hcof setter is not reporting errors")
+            except Exception:
+                pass
+
+            try:
+                npf.rhs = [1, 2, 3]
+                raise AssertionError("rhs setter is not reporting errors")
+            except Exception:
+                pass
+            
     name = "dis_model"
     sim_pth = data_pth / name
     test_pth = tmpdir / name
