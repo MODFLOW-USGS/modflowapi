@@ -350,9 +350,7 @@ class PackageBase:
         if self._rhs is None:
             rhs = self.rhs
             if rhs is None:
-                raise Exception(
-                    f"{self.pkg_type} does not have a rhs array"
-                )
+                raise Exception(f"{self.pkg_type} does not have a rhs array")
 
         self._rhs[:] = values[:]
 
@@ -375,9 +373,7 @@ class PackageBase:
         if self._hcof is None:
             hcof = self.hcof
             if hcof is None:
-                raise Exception(
-                    f"{self.pkg_type} does not have an hcof array"
-                )
+                raise Exception(f"{self.pkg_type} does not have an hcof array")
 
         self._hcof[:] = values[:]
 
