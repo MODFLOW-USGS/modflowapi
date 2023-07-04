@@ -9,8 +9,9 @@ from modflowapi import Callbacks, run_simulation
 import shutil
 import numpy as np
 
+from .common import libmf6 as so
+
 pytestmark = pytest.mark.extensions
-so = "libmf6"
 data_pth = pathlib.Path("../examples/data")
 
 

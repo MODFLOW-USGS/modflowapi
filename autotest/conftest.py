@@ -1,42 +1,21 @@
+"""Fixtures for pytest. Other common functions are in common.py."""
+
 from itertools import groupby
 from os import linesep
 from pathlib import Path
-from tempfile import gettempdir
+from shutil import copytree
 
 import pytest
-from filelock import FileLock
+
+from .common import get_mf6_examples_path, is_nested, libmf6
 
 
-__mf6_examples = "mf6_examples"
-__mf6_examples_path = Path(gettempdir()) / __mf6_examples
-__mf6_examples_lock = FileLock(Path(gettempdir()) / f"{__mf6_examples}.lock")
+def pytest_report_header(config, start_path, startdir):
+    """Show report header at top of pytest output.
 
-
-def get_mf6_examples_path() -> Path:
-    pytest.importorskip("modflow_devtools")
-    from modflow_devtools.download import download_and_unzip
-
-    # use file lock so mf6 distribution is downloaded once,
-    # even when tests are run in parallel with pytest-xdist
-    __mf6_examples_lock.acquire()
-    try:
-        if not __mf6_examples_path.is_dir():
-            __mf6_examples_path.mkdir(exist_ok=True)
-            download_and_unzip(
-                url="https://github.com/MODFLOW-USGS/modflow6-examples/releases/download/current/modflow6-examples.zip",
-                path=__mf6_examples_path,
-                verbose=True,
-            )
-        return __mf6_examples_path
-    finally:
-        __mf6_examples_lock.release()
-
-def is_nested(namfile) -> bool:
-    p = Path(namfile)
-    if not p.is_file() or not p.name.endswith(".nam"):
-        raise ValueError(f"Expected a namfile path, got {p}")
-
-    return p.parent.parent.name != __mf6_examples
+    https://docs.pytest.org/reference/reference.html#pytest.hookspec.pytest_report_header
+    """
+    return f"libmf6: {libmf6}"
 
 
 def pytest_generate_tests(metafunc):
