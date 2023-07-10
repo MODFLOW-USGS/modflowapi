@@ -2,10 +2,25 @@ import os
 import platform
 import shutil
 from pathlib import Path
+from typing import Optional
+
+
+def get_libmf6_name(sysinfo: Optional[str] = None) -> str:
+    """Get name to libmf6 based on ``platform.system()`` information."""
+    if sysinfo is None:
+        sysinfo = platform.system()
+    if sysinfo == "Windows":
+        return "libmf6.dll"
+    elif sysinfo == "Linux":
+        return "libmf6.so"
+    elif sysinfo == "Darwin":
+        return "libmf6.dylib"
+    else:
+        raise NotImplementedError(f"system not supported: {sysinfo!r}")
 
 
 def get_libmf6() -> Path:
-    """Get libmf6 based on environment variable or PATH with mf6.
+    """Get path to libmf6 based on environment variable or PATH with mf6.
 
     To specify directly, set the environment variable `LIBMF6` to the path of
     the library to test.
@@ -26,15 +41,10 @@ def get_libmf6() -> Path:
         if mf6 is None:
             raise FileNotFoundError("cannot find mf6 on PATH")
         mf6 = Path(mf6)
-        sysinfo = platform.system()
-        if sysinfo == "Windows":
-            lib_path = mf6.parent / "libmf6.dll"
-        elif sysinfo == "Linux":
-            lib_path = mf6.parent / "libmf6.so"
-        elif sysinfo == "Darwin":
-            lib_path = mf6.parent / "libmf6.dylib"
-        else:
-            raise NotImplementedError(f"system not supported: {sysinfo}")
+        lib_name = get_libmf6_name()
+        lib_path = mf6.parent.parent / "lib" / lib_name
+        if not lib_path.exists():
+            lib_path = mf6.parent / lib_name
     if lib_path.exists():
         return lib_path
     raise FileNotFoundError(f"{lib_path} not found")

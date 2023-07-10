@@ -1,12 +1,14 @@
 from pathlib import Path
 from shutil import copytree
-from modflowapi import run_simulation
 
 import pytest
+from modflowapi import run_simulation
+
 from autotest.conftest import is_nested
 
+from .common import libmf6 as dll
+
 pytestmark = pytest.mark.mf6
-dll = "libmf6"
 
 
 def test_mf6_example_simulations(tmpdir, mf6_example_namfiles):
