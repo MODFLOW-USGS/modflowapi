@@ -348,7 +348,9 @@ class PackageBase:
     @rhs.setter
     def rhs(self, values):
         if self._rhs is None:
-            return
+            rhs = self.rhs
+            if rhs is None:
+                raise Exception(f"{self.pkg_type} does not have a rhs array")
 
         self._rhs[:] = values[:]
 
@@ -369,7 +371,9 @@ class PackageBase:
     @hcof.setter
     def hcof(self, values):
         if self._hcof is None:
-            return
+            hcof = self.hcof
+            if hcof is None:
+                raise Exception(f"{self.pkg_type} does not have an hcof array")
 
         self._hcof[:] = values[:]
 
