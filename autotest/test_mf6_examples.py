@@ -24,9 +24,7 @@ def test_mf6_example_simulations(tmpdir, mf6_example_namfiles):
     namfile = Path(mf6_example_namfiles[0])
 
     nested = is_nested(namfile)
-    tmpdir = Path(
-        tmpdir / "workspace"
-    )
+    tmpdir = Path(tmpdir / "workspace")
 
     copytree(
         src=namfile.parent.parent if nested else namfile.parent, dst=tmpdir

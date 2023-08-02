@@ -79,6 +79,7 @@ def update_version_py(timestamp: datetime, version: Version):
         f.write("__version__ = f'{major}.{minor}.{micro}'\n")
     print(f"Updated {_version_py_path} to version {version}")
 
+
 def update_citation_cff(timestamp: datetime, version: Version):
     lines = open(_citation_cff_path, "r").readlines()
     with open(_citation_cff_path, "w") as f:
@@ -87,6 +88,7 @@ def update_citation_cff(timestamp: datetime, version: Version):
                 line = f"version: {version}\n"
             f.write(line)
     print(f"Updated {_citation_cff_path} to version {version}")
+
 
 def update_version(
     timestamp: datetime = datetime.now(),
