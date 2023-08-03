@@ -128,15 +128,13 @@ jobs:
       - name: Install modflow executables
         uses: modflowpy/install-modflow-action@v1
         with:
-          path: ~/work/modflowapi/modflowapi/autotest
+          path: ${{ github.workspace }}/autotest
           repo: modflow6-nightly-build
 
       - name: Run autotests
         working-directory: ./autotest
         shell: bash -l {0}
-        run: |
-          # chmod a+x libmf6*
-          pytest -n auto -m "not mf6"
+        run: pytest -v -n auto -m "not mf6"
           
   autotest_mf6_examples:
     name: modflowapi mf6 examples autotests
@@ -173,12 +171,10 @@ jobs:
       - name: Install modflow executables
         uses: modflowpy/install-modflow-action@v1
         with:
-          path: ~/work/modflowapi/modflowapi/autotest
+          path: ${{ github.workspace }}/autotest
           repo: modflow6-nightly-build
 
       - name: Run autotests
         working-directory: ./autotest
         shell: bash -l {0}
-        run: |
-          # chmod a+x libmf6*
-          pytest -n auto -m "mf6 and not extensions"
+        run: pytest -v -n auto -m "mf6 and not extensions"

@@ -1,17 +1,54 @@
+import shutil
+from pathlib import Path
+from platform import system
+
+import numpy as np
 import pytest
-import pathlib
+from modflow_devtools.misc import set_dir
+
+from modflowapi import Callbacks, ModflowApi, run_simulation
 from modflowapi.extensions.pakbase import (
+    AdvancedPackage,
     ArrayPackage,
     ListPackage,
-    AdvancedPackage,
 )
-from modflowapi import Callbacks, run_simulation
-import shutil
-import numpy as np
 
+data_pth = Path("../examples/data")
 pytestmark = pytest.mark.extensions
-so = "libmf6"
-data_pth = pathlib.Path("../examples/data")
+os = system()
+so = "libmf6" + (
+    ".so"
+    if os == "Linux"
+    else ".dylib"
+    if os == "Darwin"
+    else ".dll"
+    if os == "Windows"
+    else None
+)
+if so is None:
+    pytest.skip("Unsupported operating system", allow_module_level=True)
+
+
+@pytest.mark.parametrize("use_str", [True, False])
+def test_ctor_finds_libmf6_by_name(use_str):
+    api = ModflowApi(so if use_str else Path(so))
+
+
+@pytest.mark.parametrize("use_str", [True, False])
+def test_ctor_finds_libmf6_by_relpath(tmpdir, use_str):
+    shutil.copy(so, tmpdir)
+    inner = tmpdir / "inner"
+    inner.mkdir()
+    with set_dir(inner):
+        so_path = f"../{so}"
+        api = ModflowApi(so_path if use_str else Path(so_path))
+
+
+@pytest.mark.parametrize("use_str", [True, False])
+def test_ctor_finds_libmf6_by_abspath(tmpdir, use_str):
+    shutil.copy(so, tmpdir)
+    so_path = tmpdir / so
+    api = ModflowApi(str(so_path) if use_str else so_path)
 
 
 def test_dis_model(tmpdir):
@@ -329,7 +366,6 @@ def test_rhs_hcof_advanced(tmpdir):
     def callback(sim, step):
         model = sim.test_model
         if step == Callbacks.timestep_start:
-
             wel = model.wel
             rhs = wel.rhs
             rhs[0:3] = [-150, -100, -50]
@@ -341,7 +377,7 @@ def test_rhs_hcof_advanced(tmpdir):
             )
 
             hcof = wel.hcof
-            hcof[0: 3] = np.abs(rhs)[0:3] / 2
+            hcof[0:3] = np.abs(rhs)[0:3] / 2
 
             wel.hcof = hcof
 
@@ -352,13 +388,13 @@ def test_rhs_hcof_advanced(tmpdir):
             )
 
             rhs *= 1.2
-            wel.set_advanced_var('rhs', rhs)
+            wel.set_advanced_var("rhs", rhs)
             rhs3 = wel.rhs
 
             np.testing.assert_allclose(
                 rhs,
                 rhs3,
-                err_msg="set advanced var method not working properly"
+                err_msg="set advanced var method not working properly",
             )
 
             npf = model.npf
@@ -374,7 +410,7 @@ def test_rhs_hcof_advanced(tmpdir):
                 raise AssertionError("rhs setter is not reporting errors")
             except Exception:
                 pass
-            
+
     name = "dis_model"
     sim_pth = data_pth / name
     test_pth = tmpdir / name
