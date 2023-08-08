@@ -108,7 +108,7 @@ class ListInput(object):
             return
         recarray = np.recarray((self._nbound[0],), self._dtype)
         for name, ptr in self._ptrs.items():
-            if name == "auxvar" and self._naux == 0:
+            if name == "auxvar" and self._naux[0] == 0:
                 continue
             values = np.copy(ptr)
             if name in self._boundvars:
