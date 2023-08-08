@@ -108,21 +108,19 @@ class ListInput(object):
             return
         recarray = np.recarray((self._nbound[0],), self._dtype)
         for name, ptr in self._ptrs.items():
+            if name == "auxvar" and self._naux[0] == 0:
+                continue
             values = np.copy(ptr)
             if name in self._boundvars:
                 for ix, nm in enumerate(self.parent._bound_vars):
-                    recarray[nm][0 : self._nbound[0]] = values[
-                        0 : self._nbound[0], ix
-                    ]
+                    bnd_values = values[0 : self._nbound[0], ix]
+                    recarray[nm][0 : self._nbound[0]] = bnd_values
             elif name == "auxvar":
-                if self._naux[0] == 0:
-                    continue
-                else:
-                    for ix in range(self._naux[0]):
-                        nm = self._auxnames[ix]
-                        recarray[nm][0 : self._nbound[0]] = values[
-                            0 : self._nbound[0], ix
-                        ]
+                for ix in range(self._naux[0]):
+                    nm = self._auxnames[ix]
+                    aux_values = values[0 : self._nbound[0], ix]
+                    recarray[nm][0 : self._nbound[0]] = aux_values
+
             elif name == "auxname_cst":
                 pass
 
@@ -135,9 +133,8 @@ class ListInput(object):
                         zip(*np.unravel_index(values, self.parent.model.shape))
                     )
 
-                recarray[name][0 : self._nbound[0]] = values[
-                    0 : self._nbound[0]
-                ]
+                values = values[0 : self._nbound[0]]
+                recarray[name][0 : self._nbound[0]] = values
 
         return recarray
 
