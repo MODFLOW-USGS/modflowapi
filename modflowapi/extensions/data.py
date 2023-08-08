@@ -113,13 +113,13 @@ class ListInput(object):
             values = np.copy(ptr)
             if name in self._boundvars:
                 for ix, nm in enumerate(self.parent._bound_vars):
-                    values = values[0 : self._nbound[0], ix]
-                    recarray[nm][0 : self._nbound[0]] = values
+                    bnd_values = values[0 : self._nbound[0], ix]
+                    recarray[nm][0 : self._nbound[0]] = bnd_values
             elif name == "auxvar":
                 for ix in range(self._naux[0]):
                     nm = self._auxnames[ix]
-                    values = values[0 : self._nbound[0], ix]
-                    recarray[nm][0 : self._nbound[0]] = values
+                    aux_values = values[0 : self._nbound[0], ix]
+                    recarray[nm][0 : self._nbound[0]] = aux_values
 
             elif name == "auxname_cst":
                 pass
