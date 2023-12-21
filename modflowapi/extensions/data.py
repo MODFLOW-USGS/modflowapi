@@ -247,7 +247,7 @@ class ListInput(object):
 
             if name in self.parent._bound_vars:
                 if "bound" in self._ptrs:
-                    # remove some time after IDM inclusion
+                    # Block slated for deprecation after IDM inclusion
                     idx = self.parent._bound_vars.index(name)
                     bname = "bound"
                     self._ptrs[bname][0 : self._nbound[0], idx] = recarray[
