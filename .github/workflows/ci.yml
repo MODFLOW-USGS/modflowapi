@@ -173,7 +173,7 @@ jobs:
         with:
           path: ${{ github.workspace }}/autotest
           repo: executables
-          tag: 14.0
+          tag: "14.0"
 
       - name: Run autotests
         working-directory: ./autotest
