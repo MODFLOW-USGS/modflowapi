@@ -250,10 +250,14 @@ class ListInput(object):
                     # remove some time after IDM inclusion
                     idx = self.parent._bound_vars.index(name)
                     bname = "bound"
-                    self._ptrs[bname][0 : self._nbound[0], idx] = recarray[name]
+                    self._ptrs[bname][0 : self._nbound[0], idx] = recarray[
+                        name
+                    ]
                 elif self.parent._idm_enabled:
                     # new IDM simplification
-                    self._ptrs[name][0 : self._nbound[0]] = recarray[name].ravel()
+                    self._ptrs[name][0 : self._nbound[0]] = recarray[
+                        name
+                    ].ravel()
                 else:
                     pass
             elif name in self._auxnames:
