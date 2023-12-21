@@ -33,7 +33,7 @@ class ListInput(object):
         self._ptrs = {}
         self._nodevars = ("nodelist", "nexg", "maxats")
         self._boundvars = ("bound",)
-        # self._auxname = []
+
         self._maxbound = [
             0,
         ]
@@ -46,13 +46,79 @@ class ListInput(object):
         self._auxnames = []
         self._dtype = []
         self._reduced_to_var_addr = {}
-        self._set_stress_period_data()
+        if self.parent._idm_enabled:
+            for var in ("BOUND", "AUXVAR"):
+                self.var_addrs.pop(
+                    self.var_addrs.index(
+                        self.mf6.get_var_address(
+                            var, self.parent.model.name, self.parent.pkg_name
+                        )
+                    )
+                )
+            self.var_addrs.append(
+                self.mf6.get_var_address(
+                    "AUXVAR_IDM", self.parent.model.name, self.parent.pkg_name
+                )
+            )
+            self._set_stress_period_data_idm()
+        else:
+            self._set_stress_period_data()
+
+    def _set_stress_period_data_idm(self):
+        """
+        Method to set stress period data variable pointers to the _ptrs
+        dictionary. Uses IDM updates instead of bound to access variable
+        pointers.
+        """
+        # for now we need to add self.parent._bound_vars data to var_addrs
+        for var_addr in self.var_addrs:
+            try:
+                values = self.mf6.get_value_ptr(var_addr)
+            except xmipy.errors.InputError:
+                if self._naux[0] > 0:
+                    values = self.mf6.get_value(var_addr)
+                else:
+                    continue
+
+            reduced = var_addr.split("/")[-1].lower()
+            if reduced in ("maxbound", "nbound"):
+                setattr(self, f"_{reduced}", values)
+            elif reduced in ("nexg", "maxats"):
+                setattr(self, "_maxbound", values)
+                setattr(self, "_nbound", values)
+            elif reduced in ("naux",):
+                setattr(self, "_naux", values)
+            elif reduced in ("auxname_cst"):
+                setattr(self, "_auxnames", list(values))
+            else:
+                self._ptrs[reduced] = values
+                self._reduced_to_var_addr[reduced] = var_addr
+                if reduced in self.parent._bound_vars:
+                    typ_str = values.dtype.str
+                    dtype = (reduced, typ_str)
+                    self._dtype.append(dtype)
+                elif reduced in self._nodevars:
+                    dtype = (reduced, "O")
+                    self._dtype.append(dtype)
+                elif reduced == "auxvar_idm":
+                    if self._naux == 0:
+                        continue
+                    else:
+                        for ix in range(self._naux[0]):
+                            typ_str = values.dtype.str
+                            dtype = (self._auxnames[ix], typ_str)
+                            self._dtype.append(dtype)
+                else:
+                    typ_str = values.dtype.str
+                    dtype = (reduced, typ_str)
+                    self._dtype.append(dtype)
 
     def _set_stress_period_data(self):
         """
         Method to set stress period data variable pointers to the _ptrs
         dictionary
 
+        PENDING DEPRECATION AND REPLACEMENT by _set_stress_period_data_idm()
         """
         for var_addr in self.var_addrs:
             try:
@@ -108,14 +174,19 @@ class ListInput(object):
             return
         recarray = np.recarray((self._nbound[0],), self._dtype)
         for name, ptr in self._ptrs.items():
-            if name == "auxvar" and self._naux[0] == 0:
+            if "auxvar" in name and self._naux[0] == 0:
                 continue
             values = np.copy(ptr)
             if name in self._boundvars:
+                # note: block slated for deprecation
                 for ix, nm in enumerate(self.parent._bound_vars):
                     bnd_values = values[0 : self._nbound[0], ix]
                     recarray[nm][0 : self._nbound[0]] = bnd_values
-            elif name == "auxvar":
+            elif name in self.parent._bound_vars and self.parent._idm_enabled:
+                # new IDM simplification method
+                bnd_values = values[0 : self._nbound[0]].ravel()
+                recarray[name][0 : self._nbound[0]] = bnd_values
+            elif "auxvar" in name:
                 for ix in range(self._naux[0]):
                     nm = self._auxnames[ix]
                     aux_values = values[0 : self._nbound[0], ix]
@@ -175,12 +246,26 @@ class ListInput(object):
                 recarray[name] = self.parent.model.usertonode[nodes] + 1
 
             if name in self.parent._bound_vars:
-                idx = self.parent._bound_vars.index(name)
-                bname = "bound"
-                self._ptrs[bname][0 : self._nbound[0], idx] = recarray[name]
+                if "bound" in self._ptrs:
+                    # Block slated for deprecation after IDM inclusion
+                    idx = self.parent._bound_vars.index(name)
+                    bname = "bound"
+                    self._ptrs[bname][0 : self._nbound[0], idx] = recarray[
+                        name
+                    ]
+                elif self.parent._idm_enabled:
+                    # new IDM simplification
+                    self._ptrs[name][0 : self._nbound[0]] = recarray[
+                        name
+                    ].ravel()
+                else:
+                    pass
             elif name in self._auxnames:
+                ptr_name = "auxvar"
+                if self.parent._idm_enabled:
+                    ptr_name += "_idm"
                 idx = self._auxnames.index(name)
-                self._ptrs["auxvar"][0 : self._nbound[0], idx] = recarray[name]
+                self._ptrs[ptr_name][0 : self._nbound[0], idx] = recarray[name]
             elif name == "auxname_cst":
                 pass
             else:

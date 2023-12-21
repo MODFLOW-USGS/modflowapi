@@ -86,7 +86,7 @@ pkgvars = {
         "maxbound",
         "nbound",
         "nodelist",
-        ("bound", ("flux",)),
+        ("bound", ("q",)),
         "naux",
         "auxname_cst",
         "auxvar",
@@ -202,6 +202,7 @@ class PackageBase:
         self._hcof = None
         self._bound_vars = []
         self._advanced_var_names = None
+        self._idm_enabled = False
 
         var_addrs = []
         if self._child_type != "advanced":
@@ -239,6 +240,14 @@ class PackageBase:
                             var.upper(), self.model.name, self.pkg_name
                         )
                     )
+
+        for var in self._bound_vars:
+            addr_chk = self.model.mf6.get_var_address(
+                var.upper(), self.model.name, self.pkg_name
+            )
+            if addr_chk in self.model.mf6.get_input_var_names():
+                self._idm_enabled = True
+                var_addrs.append(addr_chk)
 
         self.var_addrs = var_addrs
         self._variables_adv = AdvancedInput(self)

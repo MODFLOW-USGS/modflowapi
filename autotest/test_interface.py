@@ -11,6 +11,7 @@ from modflowapi.extensions.pakbase import (
     AdvancedPackage,
     ArrayPackage,
     ListPackage,
+    pkgvars
 )
 
 data_pth = Path("../examples/data")
@@ -120,10 +121,10 @@ def test_dis_model(tmpdir):
 
             factor = ((1 + sim.kstp) / sim.nstp) * 0.5
             spd = sim.test_model.wel.stress_period_data.values
-            sim.test_model.wel.stress_period_data["flux"] *= factor
+            sim.test_model.wel.stress_period_data["q"] *= factor
 
             spd2 = sim.test_model.wel.stress_period_data.values
-            if not np.allclose((spd["flux"] * factor), spd2["flux"]):
+            if not np.allclose((spd["q"] * factor), spd2["q"]):
                 raise AssertionError("Pointer not being set properly")
 
             if sim.kper >= 3 and sim.kstp == 0:
