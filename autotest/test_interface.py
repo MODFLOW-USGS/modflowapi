@@ -29,14 +29,6 @@ so = "libmf6" + (
 if so is None:
     pytest.skip("Unsupported operating system", allow_module_level=True)
 
-wel_meta = pkgvars["wel"]
-for var in wel_meta:
-    if isinstance(var, tuple):
-        if "q" in var[1]:
-            wellvar = "q"
-        else:
-            wellvar = "flux"
-        break
 
 @pytest.mark.parametrize("use_str", [True, False])
 def test_ctor_finds_libmf6_by_name(use_str):
@@ -129,10 +121,10 @@ def test_dis_model(tmpdir):
 
             factor = ((1 + sim.kstp) / sim.nstp) * 0.5
             spd = sim.test_model.wel.stress_period_data.values
-            sim.test_model.wel.stress_period_data[wellvar] *= factor
+            sim.test_model.wel.stress_period_data["q"] *= factor
 
             spd2 = sim.test_model.wel.stress_period_data.values
-            if not np.allclose((spd[wellvar] * factor), spd2[wellvar]):
+            if not np.allclose((spd["q"] * factor), spd2["q"]):
                 raise AssertionError("Pointer not being set properly")
 
             if sim.kper >= 3 and sim.kstp == 0:
