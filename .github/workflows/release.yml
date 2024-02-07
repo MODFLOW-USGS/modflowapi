@@ -177,6 +177,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
+    environment:  # requires a 'release' environment in repo settings
+      name: release
+      url: https://pypi.org/p/modflowapi
     steps:
 
       - name: Checkout main branch
@@ -200,9 +204,15 @@ jobs:
       
       - name: Check package
         run: twine check --strict dist/*
+      
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
 
-      - name: Publish package
-        run: twine upload dist/*
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
 
   reset:
     name: Draft reset PR
