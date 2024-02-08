@@ -61,7 +61,6 @@ jobs:
           OUTPUT: CHANGELOG.md
 
       - name: Update changelog
-        id: update-changelog
         run: |
           # substitute full group names
           sed -i 's/#### Ci/#### Continuous integration/' CHANGELOG.md
@@ -92,11 +91,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           ver="${{ steps.version.outputs.version }}"
-          changelog=$(cat ${{ steps.update-changelog.outputs.changelog }} | grep -v "### Version $ver")
+          changelog=$(cat CHANGELOG.md | grep -v "### Version $ver")
           
           # remove this release's changelog so we don't commit it
           # the changes have already been prepended to HISTORY.md
-          rm ${{ steps.update-changelog.outputs.changelog }}
           rm -f CHANGELOG.md
           
           # commit and push changes
