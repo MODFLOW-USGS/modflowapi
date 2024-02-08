@@ -11,7 +11,7 @@ from modflowapi.extensions.pakbase import (
     AdvancedPackage,
     ArrayPackage,
     ListPackage,
-    pkgvars
+    pkgvars,
 )
 
 data_pth = Path("../examples/data")
@@ -20,11 +20,7 @@ os = system()
 so = "libmf6" + (
     ".so"
     if os == "Linux"
-    else ".dylib"
-    if os == "Darwin"
-    else ".dll"
-    if os == "Windows"
-    else None
+    else ".dylib" if os == "Darwin" else ".dll" if os == "Windows" else None
 )
 if so is None:
     pytest.skip("Unsupported operating system", allow_module_level=True)
