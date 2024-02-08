@@ -63,32 +63,26 @@ jobs:
       - name: Update changelog
         id: update-changelog
         run: |
-          # move changelog
-          clog="CHANGELOG_${{ steps.version.outputs.version }}.md"
-          echo "changelog=$clog" >> $GITHUB_OUTPUT
-          sudo cp "${{ steps.cliff.outputs.changelog }}" "$clog"
-          
-          # show current release changelog
-          cat "$clog"
-          
           # substitute full group names
-          sed -i 's/#### Ci/#### Continuous integration/' "$clog"
-          sed -i 's/#### Feat/#### New features/' "$clog"
-          sed -i 's/#### Fix/#### Bug fixes/' "$clog"
-          sed -i 's/#### Refactor/#### Refactoring/' "$clog"
-          sed -i 's/#### Test/#### Testing/' "$clog"
+          sed -i 's/#### Ci/#### Continuous integration/' CHANGELOG.md
+          sed -i 's/#### Feat/#### New features/' CHANGELOG.md
+          sed -i 's/#### Fix/#### Bug fixes/' CHANGELOG.md
+          sed -i 's/#### Refactor/#### Refactoring/' CHANGELOG.md
+          sed -i 's/#### Test/#### Testing/' CHANGELOG.md
           
-          cat "$clog" HISTORY.md > temp_history.md
-          sudo mv temp_history.md HISTORY.md
-          
-          # show full changelog
-          cat HISTORY.md
+          # prepend release changelog to cumulative changelog
+          clog="HISTORY.md"
+          temp="temp.md"
+          echo "$(tail -n +2 $clog)" > $clog
+          cat CHANGELOG.md $clog > $temp
+          sudo mv $temp $clog
+          sed -i '1i # Changelog' $clog
 
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
           name: changelog
-          path: ${{ steps.update-changelog.outputs.changelog }}
+          path: CHANGELOG.md
       
       - name: Format Python files
         run: python scripts/pull_request_prepare.py
