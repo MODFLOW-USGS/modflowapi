@@ -33,7 +33,9 @@ def update_version_py(timestamp: datetime, version: Version):
             f"# {_project_name} version file automatically "
             + f"created using...{basename(__file__)}\n"
         )
-        f.write("# created on..." + f"{timestamp.strftime('%B %d, %Y %H:%M:%S')}\n")
+        f.write(
+            "# created on..." + f"{timestamp.strftime('%B %d, %Y %H:%M:%S')}\n"
+        )
         f.write(f'__version__ = "{version}"\n')
     log_update(_version_py_path, version)
 
