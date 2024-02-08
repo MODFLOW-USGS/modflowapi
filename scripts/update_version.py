@@ -1,93 +1,51 @@
 import argparse
 import textwrap
 from datetime import datetime
-from enum import Enum
-from os import PathLike
+from os.path import basename
 from pathlib import Path
-from typing import NamedTuple
+from packaging.version import Version
 
 from filelock import FileLock
 
 _project_name = "modflowapi"
 _project_root_path = Path(__file__).parent.parent
+_version_txt_path = _project_root_path / "version.txt"
 _version_py_path = _project_root_path / "modflowapi" / "version.py"
 _citation_cff_path = _project_root_path / "CITATION.cff"
 
-
-class Version(NamedTuple):
-    """Semantic version number"""
-
-    major: int = 0
-    minor: int = 0
-    patch: int = 0
-
-    def __repr__(self):
-        return f"{self.major}.{self.minor}.{self.patch}"
-
-    @classmethod
-    def from_string(cls, version: str) -> "Version":
-        t = version.split(".")
-
-        vmajor = int(t[0])
-        vminor = int(t[1])
-        vpatch = int(t[2])
-
-        return cls(major=vmajor, minor=vminor, patch=vpatch)
-
-    @classmethod
-    def from_file(cls, path: PathLike) -> "Version":
-        lines = [
-            line.rstrip("\n")
-            for line in open(Path(path).expanduser().absolute(), "r")
-        ]
-        vmajor = vminor = vpatch = None
-        for line in lines:
-            line = line.strip()
-            if not any(line):
-                continue
-
-            def get_ver(l):
-                return l.split("=")[1]
-
-            if "__version__" not in line:
-                if "major" in line:
-                    vmajor = int(get_ver(line))
-                elif "minor" in line:
-                    vminor = int(get_ver(line))
-                elif "patch" in line or "micro" in line:
-                    vpatch = int(get_ver(line))
-
-        assert (
-            vmajor is not None and vminor is not None and vpatch is not None
-        ), "version string must follow semantic version format: major.minor.patch"
-        return cls(major=vmajor, minor=vminor, patch=vpatch)
+_initial_version = Version("0.0.1")
+_current_version = Version(_version_txt_path.read_text().strip())
 
 
-_initial_version = Version(0, 0, 1)
-_current_version = Version.from_file(_version_py_path)
+def log_update(path, version: Version):
+    print(f"Updated {path} with version {version}")
+
+
+def update_version_txt(version: Version):
+    with open(_version_txt_path, "w") as f:
+        f.write(str(version))
+    log_update(_version_txt_path, version)
 
 
 def update_version_py(timestamp: datetime, version: Version):
     with open(_version_py_path, "w") as f:
         f.write(
-            f"# {_project_name} version file automatically created using "
-            f"{Path(__file__).name} on {timestamp:%B %d, %Y %H:%M:%S}\n\n"
+            f"# {_project_name} version file automatically "
+            + f"created using...{basename(__file__)}\n"
         )
-        f.write(f"major = {version.major}\n")
-        f.write(f"minor = {version.minor}\n")
-        f.write(f"micro = {version.patch}\n")
-        f.write("__version__ = f'{major}.{minor}.{micro}'\n")
-    print(f"Updated {_version_py_path} to version {version}")
+        f.write("# created on..." + f"{timestamp.strftime('%B %d, %Y %H:%M:%S')}\n")
+        f.write(f'__version__ = "{version}"\n')
+    log_update(_version_py_path, version)
 
 
-def update_citation_cff(timestamp: datetime, version: Version):
+def update_citation_cff(version: Version):
     lines = open(_citation_cff_path, "r").readlines()
     with open(_citation_cff_path, "w") as f:
         for line in lines:
             if line.startswith("version:"):
                 line = f"version: {version}\n"
             f.write(line)
-    print(f"Updated {_citation_cff_path} to version {version}")
+    log_update(_citation_cff_path, version)
 
 
 def update_version(
@@ -97,7 +55,7 @@ def update_version(
     lock_path = Path(_version_py_path.name + ".lock")
     try:
         lock = FileLock(lock_path)
-        previous = Version.from_file(_version_py_path)
+        previous = Version(_version_txt_path.read_text().strip())
         version = (
             version
             if version
@@ -105,8 +63,9 @@ def update_version(
         )
 
         with lock:
+            update_version_txt(version)
             update_version_py(timestamp, version)
-            update_citation_cff(timestamp, version)
+            update_citation_cff(version)
     finally:
         try:
             lock_path.unlink()
@@ -148,7 +107,7 @@ if __name__ == "__main__":
     else:
         update_version(
             timestamp=datetime.now(),
-            version=Version.from_string(args.version)
-            if args.version
-            else _current_version,
+            version=(
+                Version(args.version) if args.version else _current_version
+            ),
         )
