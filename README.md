@@ -14,7 +14,7 @@
 [![Anaconda Version](https://anaconda.org/conda-forge/modflowapi/badges/version.svg)](https://anaconda.org/conda-forge/modflowapi)
 [![Anaconda Updated](https://anaconda.org/conda-forge/modflowapi/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/modflowapi)
 
-An extension to [xmipy](https://pypi.org/project/xmipy/) for the MODFLOW API.
+An extension to [xmipy](https://pypi.org/project/xmipy/) for the [MODFLOW API](https://www.usgs.gov/publications/modflow-application-programming-interface-simulationcontrol-and-software).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -56,6 +56,8 @@ conda install -c conda-forge modflowapi
 ## Documentation
 
 Examples using `modflowapi` and its extensions can be found in the [Quickstart](examples/notebooks/Quickstart.ipynb) and the [Extensions](examples/notebooks/MODFLOW-API_extensions_objects.ipynb) notebooks. An example of using the MODFLOW API to monitor heads during a simulation can be found in the [Head Monitor Example](examples/notebooks/Head_Monitor_Example.ipynb) Notebook. 
+
+For more info on MODFLOW 6 see [the USGS overview](https://water.usgs.gov/ogw/modflow/).
 
 ## Citation
 
