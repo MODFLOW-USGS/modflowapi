@@ -1,4 +1,5 @@
 from xmipy import XmiWrapper
+from .util import amend_libmf6_path
 
 
 class ModflowApi(XmiWrapper):
@@ -20,7 +21,7 @@ class ModflowApi(XmiWrapper):
         timing: bool = False,
     ):
         super().__init__(
-            lib_path,
+            amend_libmf6_path(lib_path),
             lib_dependency=lib_dependency,
             working_directory=working_directory,
             timing=timing,

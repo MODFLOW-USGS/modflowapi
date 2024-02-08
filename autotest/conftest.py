@@ -31,6 +31,7 @@ def get_mf6_examples_path() -> Path:
     finally:
         __mf6_examples_lock.release()
 
+
 def is_nested(namfile) -> bool:
     p = Path(namfile)
     if not p.is_file() or not p.name.endswith(".nam"):

@@ -1,6 +1,3 @@
-# version file for modflowapi
-
-major = 0
-minor = 1
-micro = 0
-__version__ = f"{major}.{minor}.{micro}"
+# modflowapi version file automatically created using...update_version.py
+# created on...February 08, 2024 13:36:49
+__version__ = "0.2.0"

@@ -38,24 +38,7 @@ def run_simulation(dll, sim_path, callback, verbose=False, _develop=False):
         development purposes and bug fixes within the modflowapi python
         package.
     """
-    ext = pathlib.Path(dll).suffix
-    dll = str(dll)
-    if not ext:
-        if platform.system().lower() == "windows":
-            dll += ".dll"
-        elif platform.system().lower() == "linux":
-            if not dll.startswith("./"):
-                if not dll.startswith("/"):
-                    dll = "./" + dll + ".so"
-                else:
-                    dll = "." + dll + ".so"
-        else:
-            dll += ".dylib"
-
-    mf6 = ModflowApi(
-        dll,
-        working_directory=sim_path,
-    )
+    mf6 = ModflowApi(dll, working_directory=sim_path)
 
     if verbose:
         version = mf6.get_version()
