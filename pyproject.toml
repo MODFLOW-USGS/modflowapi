@@ -44,7 +44,7 @@ dev = ["modflowapi[test,lint]"]
 test = [
     "filelock",
     "modflow-devtools",  # develop branch from github.com/MODFLOW-USGS/modflow-devtools
-    "pytest",
+    "pytest!=8.1.0",
     "pytest-order",
     "pytest-xdist",
 ]
