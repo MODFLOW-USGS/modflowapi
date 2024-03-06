@@ -25,25 +25,24 @@ classifiers = [
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "numpy<2.0.0",
     "pandas",
-    "xmipy",  # develop branch from github.com/Deltares/xmipy
+    "xmipy",
 ]
 
 [project.optional-dependencies]
 dev = ["modflowapi[test,lint]"]
 test = [
     "filelock",
-    "modflow-devtools",  # develop branch from github.com/MODFLOW-USGS/modflow-devtools
+    "modflow-devtools",
     "pytest!=8.1.0",
     "pytest-order",
     "pytest-xdist",
