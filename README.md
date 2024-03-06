@@ -33,7 +33,7 @@ and additional functionality specific to the MODFLOW API. Currently it is a join
 
 ## Installation
 
-`modflowapi` requires Python 3.8+, with:
+`modflowapi` requires Python 3.9+, with:
 
 ```shell
 numpy
