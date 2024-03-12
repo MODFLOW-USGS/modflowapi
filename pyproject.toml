@@ -48,10 +48,7 @@ test = [
     "pytest-xdist",
 ]
 lint = [
-    "black",
-    "flake8",
-    "isort",
-    "pylint",
+    "ruff",
 ]
 
 [project.urls]
@@ -64,6 +61,21 @@ version = {attr = "modflowapi.version.__version__"}
 [tool.setuptools.packages.find]
 include = ["modflowapi", "modflowapi.*"]
 
-[tool.black]
+[tool.ruff]
+target-version = "py38"
 line-length = 79
-target_version = ["py37"]
+include = [
+    "pyproject.toml",
+    "modflowapi/**/*.py",
+    "autotest/**/*.py",
+    "examples/**/*.py",
+    "scripts/**/*.py",
+]
+extend-include = [
+    "examples/**/*.ipynb"
+]
+
+[tool.ruff.lint]
+ignore = [
+    "F841" # local variable assigned but never used
+]

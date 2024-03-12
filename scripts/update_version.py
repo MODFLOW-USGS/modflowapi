@@ -71,7 +71,7 @@ def update_version(
     finally:
         try:
             lock_path.unlink()
-        except:
+        except FileNotFoundError:
             pass
 
 

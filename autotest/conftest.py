@@ -6,6 +6,11 @@ from tempfile import gettempdir
 import pytest
 from filelock import FileLock
 
+from modflow_devtools.download import download_and_unzip
+
+# import modflow-devtools fixtures
+pytest_plugins = ["modflow_devtools.fixtures"]
+
 
 __mf6_examples = "mf6_examples"
 __mf6_examples_path = Path(gettempdir()) / __mf6_examples
@@ -13,9 +18,6 @@ __mf6_examples_lock = FileLock(Path(gettempdir()) / f"{__mf6_examples}.lock")
 
 
 def get_mf6_examples_path() -> Path:
-    pytest.importorskip("modflow_devtools")
-    from modflow_devtools.download import download_and_unzip
-
     # use file lock so mf6 distribution is downloaded once,
     # even when tests are run in parallel with pytest-xdist
     __mf6_examples_lock.acquire()
@@ -95,45 +97,3 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize(
             key, simulations, ids=simulation_name_from_model_namfiles
         )
-
-
-@pytest.fixture(scope="function")
-def tmpdir(tmpdir_factory, request) -> Path:
-    node = (
-        request.node.name.replace("/", "_")
-        .replace("\\", "_")
-        .replace(":", "_")
-    )
-    temp = Path(tmpdir_factory.mktemp(node))
-    yield Path(temp)
-
-    keep = request.config.getoption("--keep")
-    if keep:
-        copytree(temp, Path(keep) / temp.name)
-
-    keep_failed = request.config.getoption("--keep-failed")
-    if keep_failed and request.node.rep_call.failed:
-        copytree(temp, Path(keep_failed) / temp.name)
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "-K",
-        "--keep",
-        action="store",
-        default=None,
-        help="Move the contents of temporary test directories to correspondingly named subdirectories at the given "
-        "location after tests complete. This option can be used to exclude test results from automatic cleanup, "
-        "e.g. for manual inspection. The provided path is created if it does not already exist. An error is "
-        "thrown if any matching files already exist.",
-    )
-
-    parser.addoption(
-        "--keep-failed",
-        action="store",
-        default=None,
-        help="Move the contents of temporary test directories to correspondingly named subdirectories at the given "
-        "location if the test case fails. This option automatically saves the outputs of failed tests in the "
-        "given location. The path is created if it doesn't already exist. An error is thrown if files with the "
-        "same names already exist in the given location.",
-    )
