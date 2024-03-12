@@ -21,10 +21,8 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
 
-    # check out repo
     - name: Checkout repo
       uses: actions/checkout@v3
 
@@ -45,19 +43,16 @@ jobs:
       run: |
         python -c "import modflowapi; print(modflowapi.__version__)"
 
-
   lint:
     name: lint
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     strategy:
       fail-fast: false
     defaults:
       run:
         shell: bash
-
-    if: github.event_name != 'schedule'
     steps:
-    # check out repo
     - name: Checkout repo
       uses: actions/checkout@v3
 
@@ -78,20 +73,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[lint]
 
-    - name: Run black
-      run: |
-        echo "if black check fails run"
-        echo "  black ./modflowapi"
-        echo "and then commit the changes."
-        black --check ./modflowapi
+    - name: Lint
+      run: ruff check .
 
-    - name: Run flake8
-      run: |
-        flake8 --count --show-source --exit-zero ./modflowapi
-
-    - name: Run pylint
-      run: |
-        pylint --jobs=2 --errors-only --exit-zero ./modflowapi
+    - name: Check format
+      run: ruff format . --check
 
   autotest_extensions:
     name: modflowapi extensions autotests
@@ -105,9 +91,7 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
-      # check out repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -148,9 +132,7 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
-      # check out repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -192,9 +174,7 @@ jobs:
     defaults:
       run:
         shell: bash
-
     steps:
-      # check out repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -212,11 +192,15 @@ jobs:
           pip install git+https://git@github.com/MODFLOW-USGS/modflow-devtools@develop
           pip install .[test]
 
-      - name: Install modflow executables
+      - name: Install modflow6 nightly build
         uses: modflowpy/install-modflow-action@v1
         with:
           path: ${{ github.workspace }}/autotest
           repo: modflow6-nightly-build
+      
+      - name: Debug with tmate
+        if: runner.os == 'Linux' && matrix.python-version == 3.9
+        uses: mxschmitt/action-tmate@v3
 
       - name: Run autotests
         working-directory: ./autotest

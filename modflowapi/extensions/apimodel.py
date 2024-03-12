@@ -366,8 +366,8 @@ class ApiModel(ApiMbase):
         user arrays to modflow's internal arrays
         """
         node_addr = self.mf6.get_var_address("NODES", self.name, self.dis_name)
-        nodes = self.mf6.get_value(node_addr)
-        if nodes[0] == self.size:
+        nodes = self.mf6.get_value(node_addr).item()
+        if nodes == self.size:
             nodeuser = np.arange(nodes).astype(int)
             nodereduced = np.copy(nodeuser)
         else:

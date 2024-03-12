@@ -52,13 +52,13 @@ class ApiSimulation:
         s += f"Number of models: {len(self._models)}:\n"
         for name, obj in self._models.items():
             s += f"\t{name} : {type(obj)}\n"
-        s += f"Simulation level packages include:\n"
+        s += "Simulation level packages include:\n"
         s += f"\tSLN: {self.sln}\n"
         s += f"\tTDIS: {self.tdis}\n"
         if self.ats_active:
             s += f"\tATS: {self.ats}\n"
         if self._exchanges:
-            s += f"\tExchanges include:\n"
+            s += "\tExchanges include:\n"
             for name, exchange in self._exchanges.items():
                 f"\t\t{name}: {type(exchange)}\n"
 
