@@ -11,7 +11,6 @@ from modflowapi.extensions.pakbase import (
     AdvancedPackage,
     ArrayPackage,
     ListPackage,
-    pkgvars,
 )
 
 data_pth = Path("../examples/data")
@@ -20,7 +19,11 @@ os = system()
 so = "libmf6" + (
     ".so"
     if os == "Linux"
-    else ".dylib" if os == "Darwin" else ".dll" if os == "Windows" else None
+    else ".dylib"
+    if os == "Darwin"
+    else ".dll"
+    if os == "Windows"
+    else None
 )
 if so is None:
     pytest.skip("Unsupported operating system", allow_module_level=True)
@@ -28,27 +31,27 @@ if so is None:
 
 @pytest.mark.parametrize("use_str", [True, False])
 def test_ctor_finds_libmf6_by_name(use_str):
-    api = ModflowApi(so if use_str else Path(so))
+    ModflowApi(so if use_str else Path(so))
 
 
 @pytest.mark.parametrize("use_str", [True, False])
-def test_ctor_finds_libmf6_by_relpath(tmpdir, use_str):
-    shutil.copy(so, tmpdir)
-    inner = tmpdir / "inner"
+def test_ctor_finds_libmf6_by_relpath(function_tmpdir, use_str):
+    shutil.copy(so, function_tmpdir)
+    inner = function_tmpdir / "inner"
     inner.mkdir()
     with set_dir(inner):
         so_path = f"../{so}"
-        api = ModflowApi(so_path if use_str else Path(so_path))
+        ModflowApi(so_path if use_str else Path(so_path))
 
 
 @pytest.mark.parametrize("use_str", [True, False])
-def test_ctor_finds_libmf6_by_abspath(tmpdir, use_str):
-    shutil.copy(so, tmpdir)
-    so_path = tmpdir / so
-    api = ModflowApi(str(so_path) if use_str else so_path)
+def test_ctor_finds_libmf6_by_abspath(function_tmpdir, use_str):
+    shutil.copy(so, function_tmpdir)
+    so_path = function_tmpdir / so
+    ModflowApi(str(so_path) if use_str else so_path)
 
 
-def test_dis_model(tmpdir):
+def test_dis_model(function_tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -134,7 +137,7 @@ def test_dis_model(tmpdir):
 
     name = "dis_model"
     sim_pth = data_pth / name
-    test_pth = tmpdir / name
+    test_pth = function_tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -143,7 +146,7 @@ def test_dis_model(tmpdir):
         raise Exception(e)
 
 
-def test_disv_model(tmpdir):
+def test_disv_model(function_tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -220,7 +223,7 @@ def test_disv_model(tmpdir):
 
     name = "disv_model"
     sim_pth = data_pth / name
-    test_pth = tmpdir / name
+    test_pth = function_tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -229,7 +232,7 @@ def test_disv_model(tmpdir):
         raise Exception(e)
 
 
-def test_disu_model(tmpdir):
+def test_disu_model(function_tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -300,7 +303,7 @@ def test_disu_model(tmpdir):
 
     name = "disu_model"
     sim_pth = data_pth / name
-    test_pth = tmpdir / name
+    test_pth = function_tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -309,7 +312,7 @@ def test_disu_model(tmpdir):
         raise Exception(e)
 
 
-def test_two_models(tmpdir):
+def test_two_models(function_tmpdir):
     def callback(sim, step):
         """
         Callback function
@@ -326,7 +329,7 @@ def test_two_models(tmpdir):
 
     name = "two_models"
     sim_pth = data_pth / name
-    test_pth = tmpdir / name
+    test_pth = function_tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
@@ -335,7 +338,7 @@ def test_two_models(tmpdir):
         raise Exception(e)
 
 
-def test_ats_model(tmpdir):
+def test_ats_model(function_tmpdir):
     def callback(sim, step):
         if step == Callbacks.stress_period_start:
             if sim.kper == 0 and sim.kstp == 0:
@@ -350,7 +353,7 @@ def test_ats_model(tmpdir):
 
         name = "ats0"
         sim_pth = data_pth / name
-        test_pth = tmpdir / name
+        test_pth = function_tmpdir / name
         shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
         try:
@@ -359,7 +362,7 @@ def test_ats_model(tmpdir):
             raise Exception(e)
 
 
-def test_rhs_hcof_advanced(tmpdir):
+def test_rhs_hcof_advanced(function_tmpdir):
     def callback(sim, step):
         model = sim.test_model
         if step == Callbacks.timestep_start:
@@ -410,7 +413,7 @@ def test_rhs_hcof_advanced(tmpdir):
 
     name = "dis_model"
     sim_pth = data_pth / name
-    test_pth = tmpdir / name
+    test_pth = function_tmpdir / name
     shutil.copytree(sim_pth, test_pth, dirs_exist_ok=True)
 
     try:
