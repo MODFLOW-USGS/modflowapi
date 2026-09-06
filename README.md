@@ -22,6 +22,7 @@ An extension to [xmipy](https://pypi.org/project/xmipy/) for the [MODFLOW API](h
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 - [Citation](#citation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -60,6 +61,11 @@ Documentation is available [on ReadTheDocs](modflowapi.readthedocs.io).
 Examples using `modflowapi` and its extensions can be found in the [Quickstart](docs/examples/notebooks/Quickstart.ipynb) and the [Extensions](docs/examples/notebooks/MODFLOW-API_extensions_objects.ipynb) notebooks. An example of using the MODFLOW API to monitor heads during a simulation can be found in the [Head Monitor Example](docs/examples/notebooks/Head_Monitor_Example.ipynb) Notebook. 
 
 For more info on MODFLOW 6 see [the USGS overview](https://water.usgs.gov/ogw/modflow/).
+
+## Contributing
+
+See [DEVELOPER.md](DEVELOPER.md) for how to set up a development environment, run the tests, and
+cut a release.
 
 ## Citation
 
