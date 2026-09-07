@@ -116,19 +116,19 @@ select **Run workflow** and fill in the form:
 | Input | Description |
 |:--|:--|
 | `branch` | Branch to release from. Defaults to `develop`. |
-| `bump` | Version increment relative to the latest release tag: `minor` (default), `patch`, `major`, or `dev` to release the current development version as-is. |
-| `version` | Explicit version number, e.g. `0.3.0`. Overrides `bump`. |
+| `version` | Explicit version number, e.g. `0.3.0`. Defaults to the version in `version.txt` with its `.dev` suffix removed. |
 | `run_tests` | Run the test suite before drafting the release. Defaults to true. |
 
 This can also be done from the command line, for instance:
 
 ```shell
-gh workflow run release.yml -f branch=develop -f bump=minor
+gh workflow run release.yml -f branch=develop
 ```
 
-The workflow creates a `v<version>` release branch, updates the version number, regenerates the
-changelog with [git-cliff](https://git-cliff.org/), runs the tests, and opens a draft pull request
-into `main`.
+The release version is normally the development version already set in `version.txt` (e.g.
+`1.2.0.dev0` releases as `1.2.0`); pass `version` only to release something else. The workflow
+creates a `v<version>` release branch, updates the version number, regenerates the changelog with
+[git-cliff](https://git-cliff.org/), runs the tests, and opens a draft pull request into `main`.
 
 A release can alternatively be started by pushing a release branch named `v<major>.<minor>.<patch>`.
 
