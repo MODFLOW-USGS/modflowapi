@@ -101,17 +101,6 @@ jobs:
         run: uv sync --all-extras
 
       - name: Install modflow executables
-        id: install_modflow
-        continue-on-error: true
-        uses: modflowpy/install-modflow-action@v1
-        with:
-          path: ${{ github.workspace }}/autotest
-          repo: modflow6-nightly-build
-
-      # the download reaches out to github and occasionally has its
-      # connection reset, failing the job before any test runs
-      - name: Install modflow executables (retry)
-        if: steps.install_modflow.outcome == 'failure'
         uses: modflowpy/install-modflow-action@v1
         with:
           path: ${{ github.workspace }}/autotest
@@ -154,18 +143,6 @@ jobs:
         run: uv sync --all-extras
 
       - name: Install modflow executables
-        id: install_modflow
-        continue-on-error: true
-        uses: modflowpy/install-modflow-action@v1
-        with:
-          path: ${{ github.workspace }}/autotest
-          repo: executables
-          tag: "14.0"
-
-      # the download reaches out to github and occasionally has its
-      # connection reset, failing the job before any test runs
-      - name: Install modflow executables (retry)
-        if: steps.install_modflow.outcome == 'failure'
         uses: modflowpy/install-modflow-action@v1
         with:
           path: ${{ github.workspace }}/autotest
@@ -209,17 +186,6 @@ jobs:
         run: uv sync --all-extras
 
       - name: Install modflow6 nightly build
-        id: install_modflow
-        continue-on-error: true
-        uses: modflowpy/install-modflow-action@v1
-        with:
-          path: ${{ github.workspace }}/autotest
-          repo: modflow6-nightly-build
-
-      # the download reaches out to github and occasionally has its
-      # connection reset, failing the job before any test runs
-      - name: Install modflow6 nightly build (retry)
-        if: steps.install_modflow.outcome == 'failure'
         uses: modflowpy/install-modflow-action@v1
         with:
           path: ${{ github.workspace }}/autotest
