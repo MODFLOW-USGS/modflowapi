@@ -1,12 +1,12 @@
 import argparse
-import subprocess
+import sys
 import textwrap
 from datetime import datetime
 from os.path import basename
 from pathlib import Path
 
 from filelock import FileLock
-from packaging.version import InvalidVersion, Version
+from packaging.version import Version
 
 _project_name = "modflowapi"
 _project_root_path = Path(__file__).parent.parent
@@ -14,54 +14,20 @@ _version_txt_path = _project_root_path / "version.txt"
 _version_py_path = _project_root_path / "modflowapi" / "version.py"
 _citation_cff_path = _project_root_path / "CITATION.cff"
 
-_initial_version = Version("0.0.1")
 _current_version = Version(_version_txt_path.read_text().strip())
 
 
 def log_update(path, version: Version):
-    print(f"Updated {path} with version {version}")
+    print(f"Updated {path} with version {version}", file=sys.stderr)
 
 
-def latest_release() -> Version:
-    """Version of the most recent release tag, or the initial version if there is none."""
-    try:
-        tags = subprocess.run(
-            ["git", "tag", "--list", "--sort=-v:refname"],
-            cwd=_project_root_path,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.split()
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        tags = []
-    for tag in tags:
-        try:
-            return Version(tag)
-        except InvalidVersion:
-            continue
-    return _initial_version
+def release_version() -> Version:
+    """The current development version with any development segment (e.g. '.dev0') removed."""
+    return Version(_current_version.base_version)
 
 
-def bump_version(bump: str) -> Version:
-    """Next release version, relative to the latest release tag.
-
-    The 'dev' increment releases the current development version as-is,
-    with any development segment (e.g. '.dev0') stripped.
-    """
-    if bump == "dev":
-        return Version(_current_version.base_version)
-    latest = latest_release()
-    if bump == "major":
-        return Version(f"{latest.major + 1}.0.0")
-    elif bump == "minor":
-        return Version(f"{latest.major}.{latest.minor + 1}.0")
-    elif bump == "patch":
-        return Version(f"{latest.major}.{latest.minor}.{latest.micro + 1}")
-    raise ValueError(f"Unsupported version increment: {bump}")
-
-
-def next_dev_version() -> Version:
-    """Next development version, incrementing the minor version number."""
+def post_release_version() -> Version:
+    """Development version for the next cycle: minor incremented, '.dev0' suffix."""
     version = Version(_current_version.base_version)
     return Version(f"{version.major}.{version.minor + 1}.0.dev0")
 
@@ -115,52 +81,47 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent(
             """\
-            Update version information in version.txt in the project root,
-            as well as several other files in the repository. If neither
-            --version nor --bump nor --next-dev is provided, the version
-            number will not be changed. A file lock is held to synchronize
-            file access. The version tag must be standard
+            Update version information in version.txt in the project root, as
+            well as several other files in the repository, and print the new
+            version. If none of --version, --release or --post-release is
+            provided, the version number is not changed. A file lock is held to
+            synchronize file access. The version tag must be standard
             '<major>.<minor>.<patch>' format for semantic versioning.
             """
         ),
     )
     parser.add_argument("-v", "--version", required=False, help="Specify the release version")
     parser.add_argument(
-        "-b",
-        "--bump",
-        required=False,
-        choices=["major", "minor", "patch", "dev"],
-        help=(
-            "Compute the release version by incrementing the latest release tag. "
-            "'dev' releases the current development version as-is"
-        ),
-    )
-    parser.add_argument(
-        "-n",
-        "--next-dev",
+        "-r",
+        "--release",
         required=False,
         action="store_true",
-        help="Compute the next development version, incrementing the minor version number",
+        help="Use the current development version with its development segment (e.g. '.dev0') removed",
     )
     parser.add_argument(
-        "-g",
-        "--get",
+        "-p",
+        "--post-release",
         required=False,
         action="store_true",
-        help="Print the version number, no updates (defaults false)",
+        help="Use the development version for the next cycle: the minor version incremented, with a '.dev0' suffix",
+    )
+    parser.add_argument(
+        "--dry-run",
+        required=False,
+        action="store_true",
+        help="Print the version that would be written, and exit without writing",
     )
     args = parser.parse_args()
 
-    if args.next_dev:
-        version = next_dev_version()
-    elif args.bump:
-        version = bump_version(args.bump)
+    if args.post_release:
+        version = post_release_version()
+    elif args.release:
+        version = release_version()
     elif args.version:
         version = Version(args.version)
     else:
         version = _current_version
 
-    if args.get:
-        print(version)
-    else:
+    if not args.dry_run:
         update_version(timestamp=datetime.now(), version=version)
+    print(version)
