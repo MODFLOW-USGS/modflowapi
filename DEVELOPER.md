@@ -68,7 +68,7 @@ are run from that directory.
 
 The tests need the MODFLOW 6 executables, including the `libmf6` shared library, either on the
 `PATH` or installed into `autotest/`. They also need the MODFLOW 6 example models. Both can be
-fetched with the `mf` command that ships with `modflow-devtools`:
+fetched with the `mf` command from `modflow-devtools`:
 
 ```shell
 mf programs install libmf6 --bindir autotest
@@ -103,10 +103,8 @@ API token is needed, but the repository must have a `release` environment config
 > [!IMPORTANT]
 > PyPI matches a trusted publisher on the organisation name, the repository name, the workflow
 > filename and the environment name. Renaming any of them silently invalidates the publisher, and
-> nothing reports it until the next release fails with `invalid-publisher`. This happened when the
-> organisation was renamed from `MODFLOW-USGS` to `MODFLOW-ORG`, and went unnoticed for the
-> eighteen months until the next release. After any such rename, update the publisher at
-> https://pypi.org/manage/project/modflowapi/settings/publishing/ to match.
+> nothing reports it until the next release fails with `invalid-publisher`. After any such rename,
+> update the publisher at https://pypi.org/manage/project/modflowapi/settings/publishing/ to match.
 
 ### 1. Start the release
 
@@ -157,9 +155,7 @@ open an issue there titled `@conda-forge-admin, please update version`.
 > [!IMPORTANT]
 > The bot updates the version number and the checksum, and nothing else. **Check the recipe's
 > `host` and `run` requirements against the dependencies the release actually declares**, which are
-> the `Requires-Dist` lines of the sdist on PyPI. Both releases so far needed this by hand: 1.0.0
-> because the build backend had moved from setuptools to hatchling, and 1.0.1 because the pandas
-> lower bound had been raised. A maintainer can push the correction to the bot's branch.
+> the `Requires-Dist` lines of the sdist on PyPI. A maintainer can push corrections to the bot's branch.
 
 Merging the feedstock pull request builds and uploads the package. It does not appear to a solver
 until the channel index is regenerated, which takes up to about an hour; the package is visible on
@@ -177,6 +173,5 @@ from. [`.github/workflows/pull_request.yml`](.github/workflows/pull_request.yml)
 that is not a conventional commit header, but it cannot tell whether the type is the right one: a
 user facing change titled `chore:` still passes the check and is still dropped from the notes.
 
-Read the generated changelog on the release pull request before merging it. Anything missing is
-added there, into the section for the version being cut, not to `develop`; the section does not
-exist until the release workflow generates it.
+Read the generated changelog on the release pull request before merging it, and make any necessary
+edits to the section for the version being cut.
